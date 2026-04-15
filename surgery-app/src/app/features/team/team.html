@@ -1,0 +1,265 @@
+<div class="team-page">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="team-header">
+    <div>
+      <h1 class="team-title">Equipo médico</h1>
+      <p class="team-sub">Gestión de cirujanos, anestesiólogos y asistentes</p>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path [attr.d]="icons['plus']"/>
+      </svg>
+      Nuevo miembro
+    </button>
+  </div>
+
+  <!-- ── ROLE TABS ─────────────────────────────── -->
+  <div class="role-tabs">
+    <button class="role-tab" [class.active]="filterRole() === 'all'" (click)="filterRole.set('all')">
+      Todos <span class="tab-count">{{ counts().all }}</span>
+    </button>
+    @for (r of roleOptions; track r.value) {
+      <button class="role-tab" [class.active]="filterRole() === r.value" (click)="filterRole.set(r.value)">
+        {{ r.plural }} <span class="tab-count" [class]="r.value">{{ counts()[r.value] }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ── CARDS GRID ────────────────────────────── -->
+  <div class="team-toolbar">
+    <div class="search-wrap">
+      <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path [attr.d]="icons['search']"/>
+      </svg>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nombre, especialidad o número de colegiado…"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)" />
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  @if (filtered().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['empty']"/>
+        </svg>
+      </div>
+      <p class="empty-title">
+        {{ members().length === 0 ? 'Sin miembros registrados' : 'Sin resultados' }}
+      </p>
+      <p class="empty-sub">
+        {{ members().length === 0
+          ? 'Agrega cirujanos, anestesiólogos y asistentes al equipo'
+          : 'Intenta ajustar el filtro o la búsqueda' }}
+      </p>
+      @if (members().length === 0) {
+        <button class="btn-primary mt" (click)="openCreate()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path [attr.d]="icons['plus']"/>
+          </svg>
+          Nuevo miembro
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Member cards -->
+  @if (filtered().length > 0) {
+    <div class="cards-grid">
+      @for (m of filtered(); track m.id) {
+        <div class="member-card" [class]="'card-' + m.role">
+          <div class="card-top">
+            <div class="member-avatar" [class]="'avatar-' + m.role">
+              {{ initials(m) }}
+            </div>
+            <div class="card-actions">
+              <button class="action-btn" (click)="openEdit(m)" title="Editar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="icons['edit']"/>
+                </svg>
+              </button>
+              <button class="action-btn action-btn--danger" (click)="confirmDelete(m.id!)" title="Eliminar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="icons['trash']"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="member-info">
+            <div class="member-name">{{ fullName(m) }}</div>
+            <div class="member-role-badge" [class]="'role-' + m.role">
+              {{ roleLabel[m.role] }}
+            </div>
+            @if (m.specialty) {
+              <div class="member-specialty">{{ m.specialty }}</div>
+            }
+          </div>
+
+          <div class="member-meta">
+            @if (m.licenseNumber) {
+              <div class="meta-row">
+                <span class="meta-label">Colegiado</span>
+                <span class="meta-value">{{ m.licenseNumber }}</span>
+              </div>
+            }
+            @if (m.phone) {
+              <div class="meta-row">
+                <span class="meta-label">Teléfono</span>
+                <span class="meta-value">{{ m.phone }}</span>
+              </div>
+            }
+            @if (m.email) {
+              <div class="meta-row">
+                <span class="meta-label">Correo</span>
+                <span class="meta-value">{{ m.email }}</span>
+              </div>
+            }
+          </div>
+
+          <div class="card-footer">
+            <span class="status-badge" [class]="'status-' + m.status">
+              {{ statusLabel[m.status] }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Crear / Editar
+══════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ editingId() !== null ? 'Editar miembro' : 'Nuevo miembro del equipo' }}</h3>
+          <p class="modal-sub">Los campos marcados con * son obligatorios</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">Nombre <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Nombre(s)"
+              [value]="form().firstName"
+              (input)="updateForm('firstName', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Apellidos <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Apellido(s)"
+              [value]="form().lastName"
+              (input)="updateForm('lastName', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Rol <span class="req">*</span></label>
+            <select class="form-control"
+              [value]="form().role"
+              (change)="updateForm('role', $any($event.target).value)">
+              @for (r of roleOptions; track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Especialidad</label>
+            <select class="form-control"
+              [value]="form().specialty"
+              (change)="updateForm('specialty', $any($event.target).value)">
+              <option value="">Seleccionar…</option>
+              @for (s of specialtiesForRole; track s) {
+                <option [value]="s">{{ s }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">N° de colegiado <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Número de licencia"
+              [value]="form().licenseNumber"
+              (input)="updateForm('licenseNumber', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Teléfono <span class="req">*</span></label>
+            <input class="form-control" type="tel" placeholder="Ej. 8888-8888"
+              [value]="form().phone"
+              (input)="updateForm('phone', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Correo electrónico</label>
+            <input class="form-control" type="email" placeholder="correo@ejemplo.com"
+              [value]="form().email"
+              (input)="updateForm('email', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control"
+              [value]="form().status"
+              (change)="updateForm('status', $any($event.target).value)">
+              @for (opt of statusOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn-primary" (click)="saveForm()" [disabled]="!isFormValid()">
+          {{ editingId() !== null ? 'Guardar cambios' : 'Agregar miembro' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MODAL — Confirmar eliminación
+══════════════════════════════════════════ -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar miembro</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-msg">¿Está seguro de que desea eliminar este miembro del equipo? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="doDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

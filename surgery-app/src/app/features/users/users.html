@@ -1,0 +1,252 @@
+<div class="users-page">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="users-header">
+    <div>
+      <h1 class="users-title">Usuarios</h1>
+      <p class="users-sub">Gestión de acceso y roles del sistema</p>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path [attr.d]="icons['plus']"/>
+      </svg>
+      Nuevo usuario
+    </button>
+  </div>
+
+  <!-- ── ROLE TABS ─────────────────────────────── -->
+  <div class="role-tabs">
+    <button class="role-tab" [class.active]="filterRole() === 'all'" (click)="filterRole.set('all')">
+      Todos <span class="tab-count">{{ counts().all }}</span>
+    </button>
+    @for (r of roleOptions; track r.value) {
+      <button class="role-tab" [class.active]="filterRole() === r.value"
+        (click)="filterRole.set(r.value)">
+        {{ r.label }}
+        <span class="tab-count" [class]="r.value">{{ counts()[r.value] }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ── TABLE CARD ───────────────────────────── -->
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['search']"/>
+        </svg>
+        <input
+          class="search-input" type="text"
+          placeholder="Buscar por nombre o correo…"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    @if (filtered().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons['empty']"/>
+          </svg>
+        </div>
+        <p class="empty-title">{{ users().length === 0 ? 'Sin usuarios registrados' : 'Sin resultados' }}</p>
+        <p class="empty-sub">
+          {{ users().length === 0
+            ? 'Crea el primer usuario con el botón "Nuevo usuario"'
+            : 'Intenta ajustar el filtro o la búsqueda' }}
+        </p>
+        @if (users().length === 0) {
+          <button class="btn-primary mt" (click)="openCreate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path [attr.d]="icons['plus']"/>
+            </svg>
+            Nuevo usuario
+          </button>
+        }
+      </div>
+    }
+
+    @if (filtered().length > 0) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Rol</th>
+              <th>Estado</th>
+              <th>Creado</th>
+              <th>Último acceso</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of filtered(); track u.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar" [class]="'avatar-' + u.role">{{ initials(u) }}</div>
+                    <div class="user-name">{{ fullName(u) }}</div>
+                  </div>
+                </td>
+                <td>{{ u.email }}</td>
+                <td>
+                  <span class="role-badge" [class]="'role-' + u.role">
+                    {{ roleLabel[u.role] }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge" [class]="'status-' + u.status">
+                    {{ u.status === 'active' ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+                <td>{{ u.lastLogin ? (u.lastLogin | date:'dd/MM/yyyy') : '—' }}</td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn" (click)="openEdit(u)" title="Editar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['edit']"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn action-btn--danger" (click)="confirmDelete(u.id!)" title="Eliminar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['trash']"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Crear / Editar
+══════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ editingId() !== null ? 'Editar usuario' : 'Nuevo usuario' }}</h3>
+          <p class="modal-sub">Los campos marcados con * son obligatorios</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">Nombre <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Nombre(s)"
+              [value]="form().firstName"
+              (input)="updateForm('firstName', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Apellidos <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Apellido(s)"
+              [value]="form().lastName"
+              (input)="updateForm('lastName', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group form-full">
+            <label class="form-label">Correo electrónico <span class="req">*</span></label>
+            <input class="form-control" type="email" placeholder="correo@surgical.cr"
+              [value]="form().email"
+              (input)="updateForm('email', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Rol <span class="req">*</span></label>
+            <select class="form-control"
+              [value]="form().role"
+              (change)="updateForm('role', $any($event.target).value)">
+              @for (r of roleOptions; track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control"
+              [value]="form().status"
+              (change)="updateForm('status', $any($event.target).value)">
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+
+          <div class="form-group form-full">
+            <label class="form-label">
+              {{ editingId() !== null ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña *' }}
+            </label>
+            <div class="input-wrap">
+              <input
+                class="form-control input-with-action"
+                [type]="showPassword() ? 'text' : 'password'"
+                placeholder="Mínimo 8 caracteres"
+                [value]="newPassword()"
+                (input)="newPassword.set($any($event.target).value)" />
+              <button type="button" class="eye-btn" (click)="showPassword.set(!showPassword())">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="showPassword() ? icons['eyeOff'] : icons['eye']"/>
+                </svg>
+              </button>
+            </div>
+            @if (newPassword().length > 0 && newPassword().length < 8) {
+              <p class="form-hint">La contraseña debe tener al menos 8 caracteres</p>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn-primary" (click)="saveForm()" [disabled]="!isFormValid()">
+          {{ editingId() !== null ? 'Guardar cambios' : 'Crear usuario' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MODAL — Confirmar eliminación
+══════════════════════════════════════════ -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar usuario</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-msg">¿Está seguro de que desea eliminar este usuario? Perderá acceso al sistema de forma inmediata.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="doDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

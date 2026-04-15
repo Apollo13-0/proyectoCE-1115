@@ -3,39 +3,19 @@ import { ShellComponent } from './layout/shell/shell';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-
+  { path: 'login', loadComponent: () => import('./features/auth/login/login').then(m => m.LoginComponent) },
   {
-    path: 'login',
-    loadComponent: () =>
-      import('./features/auth/login/login').then(m => m.LoginComponent)
-  },
-
-  {
-    path: '',
-    component: ShellComponent,
+    path: '', component: ShellComponent,
     children: [
-      {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./features/dashboard/dashboard').then(m => m.DashboardComponent)
-      },
-      {
-        path: 'calendar',
-        loadComponent: () =>
-          import('./features/calendar/calendar').then(m => m.CalendarComponent)
-      },
-      {
-        path: 'surgeries',
-        loadComponent: () =>
-          import('./features/surgeries/surgeries').then(m => m.SurgeriesComponent)
-      },
-      {
-        path: 'patients',
-        loadComponent: () =>
-          import('./features/patients/patients').then(m => m.PatientsComponent)
-      },
+      { path: 'dashboard', loadComponent: () => import('./features/dashboard/dashboard').then(m => m.DashboardComponent) },
+      { path: 'calendar',  loadComponent: () => import('./features/calendar/calendar').then(m => m.CalendarComponent) },
+      { path: 'surgeries', loadComponent: () => import('./features/surgeries/surgeries').then(m => m.SurgeriesComponent) },
+      { path: 'patients',  loadComponent: () => import('./features/patients/patients').then(m => m.PatientsComponent) },
+      { path: 'team',      loadComponent: () => import('./features/team/team').then(m => m.TeamComponent) },
+      { path: 'documents', loadComponent: () => import('./features/documents/documents').then(m => m.DocumentsComponent) },
+      { path: 'users',     loadComponent: () => import('./features/users/users').then(m => m.UsersComponent) },
+      { path: 'settings',  loadComponent: () => import('./features/settings/settings').then(m => m.SettingsComponent) },
     ]
   },
-
   { path: '**', redirectTo: 'dashboard' }
 ];

@@ -1,0 +1,283 @@
+<div class="docs-page">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="docs-header">
+    <div>
+      <h1 class="docs-title">Documentos</h1>
+      <p class="docs-sub">Gestión de documentación clínica y pólizas en PDF</p>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path [attr.d]="icons['upload']"/>
+      </svg>
+      Subir documento
+    </button>
+  </div>
+
+  <!-- ── TYPE FILTER TABS ──────────────────────── -->
+  <div class="type-tabs">
+    <button class="type-tab" [class.active]="filterType() === 'all'" (click)="filterType.set('all')">
+      Todos <span class="tab-count">{{ counts()['all'] }}</span>
+    </button>
+    @for (t of typeOptions; track t.value) {
+      <button class="type-tab" [class.active]="filterType() === t.value"
+        (click)="filterType.set(t.value)">
+        {{ t.label }}
+        <span class="tab-count">{{ counts()[t.value] }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ── TOOLBAR ───────────────────────────────── -->
+  <div class="docs-toolbar">
+    <div class="search-wrap">
+      <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path [attr.d]="icons['search']"/>
+      </svg>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar por nombre, paciente o responsable…"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)" />
+    </div>
+  </div>
+
+  <!-- ── EMPTY STATE ───────────────────────────── -->
+  @if (filtered().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['empty']"/>
+        </svg>
+      </div>
+      <p class="empty-title">
+        {{ documents().length === 0 ? 'Sin documentos subidos' : 'Sin resultados' }}
+      </p>
+      <p class="empty-sub">
+        {{ documents().length === 0
+          ? 'Sube el primer documento clínico con el botón "Subir documento"'
+          : 'Intenta ajustar el filtro o la búsqueda' }}
+      </p>
+      @if (documents().length === 0) {
+        <button class="btn-primary mt" (click)="openCreate()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path [attr.d]="icons['upload']"/>
+          </svg>
+          Subir documento
+        </button>
+      }
+    </div>
+  }
+
+  <!-- ── DOCUMENTS GRID ───────────────────────── -->
+  @if (filtered().length > 0) {
+    <div class="docs-grid">
+      @for (d of filtered(); track d.id) {
+        <div class="doc-card" [class]="'doc-' + d.type">
+          <div class="doc-card-top">
+            <div class="doc-icon-wrap" [class]="'icon-' + d.type">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path [attr.d]="icons['file']"/>
+              </svg>
+            </div>
+            <div class="doc-actions">
+              <button class="action-btn" title="Descargar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="icons['download']"/>
+                </svg>
+              </button>
+              <button class="action-btn" (click)="openEdit(d)" title="Editar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="icons['edit']"/>
+                </svg>
+              </button>
+              <button class="action-btn action-btn--danger" (click)="confirmDelete(d.id!)" title="Eliminar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="icons['trash']"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="doc-info">
+            <div class="doc-name" [title]="d.name">{{ d.name }}</div>
+            <div class="doc-type-badge" [class]="'type-' + d.type">{{ typeLabel[d.type] }}</div>
+          </div>
+
+          <div class="doc-meta">
+            <div class="meta-row">
+              <span class="meta-label">Paciente</span>
+              <span class="meta-value">{{ d.patientName }}</span>
+            </div>
+            @if (d.surgeryId) {
+              <div class="meta-row">
+                <span class="meta-label">Cirugía</span>
+                <span class="meta-value">#{{ d.surgeryId }}</span>
+              </div>
+            }
+            @if (d.size) {
+              <div class="meta-row">
+                <span class="meta-label">Tamaño</span>
+                <span class="meta-value">{{ d.size }}</span>
+              </div>
+            }
+            <div class="meta-row">
+              <span class="meta-label">Subido</span>
+              <span class="meta-value">{{ d.uploadedAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="doc-footer">
+            <span class="status-badge" [class]="'status-' + d.status">
+              {{ statusLabel[d.status] }}
+            </span>
+            @if (d.uploadedBy) {
+              <span class="doc-by">{{ d.uploadedBy }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Subir / Editar documento
+══════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ editingId() !== null ? 'Editar documento' : 'Subir documento' }}</h3>
+          <p class="modal-sub">Formatos aceptados: PDF. Tamaño máximo: 10 MB</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Upload area -->
+        @if (editingId() === null) {
+          <div
+            class="upload-area"
+            [class.dragover]="dragOver()"
+            (dragover)="onDragOver($event)"
+            (dragleave)="onDragLeave()"
+            (drop)="onDrop($event)"
+            (click)="fileInput.click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path [attr.d]="icons['upload']"/>
+            </svg>
+            <p class="upload-title">
+              {{ form().name || 'Arrastra un PDF aquí o haz clic para seleccionar' }}
+            </p>
+            @if (form().size) {
+              <p class="upload-size">{{ form().size }}</p>
+            }
+            <input #fileInput type="file" accept=".pdf" hidden (change)="onFileChange($event)" />
+          </div>
+        }
+
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label class="form-label">Nombre del documento <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Ej. Póliza INS 2026"
+              [value]="form().name"
+              (input)="updateForm('name', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Tipo <span class="req">*</span></label>
+            <select class="form-control"
+              [value]="form().type"
+              (change)="updateForm('type', $any($event.target).value)">
+              @for (t of typeOptions; track t.value) {
+                <option [value]="t.value">{{ t.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control"
+              [value]="form().status"
+              (change)="updateForm('status', $any($event.target).value)">
+              @for (s of statusOptions; track s.value) {
+                <option [value]="s.value">{{ s.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Paciente <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Nombre del paciente"
+              [value]="form().patientName"
+              (input)="updateForm('patientName', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ID de cirugía (opcional)</label>
+            <input class="form-control" type="text" placeholder="Ej. 1042"
+              [value]="form().surgeryId"
+              (input)="updateForm('surgeryId', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Subido por</label>
+            <input class="form-control" type="text" placeholder="Nombre del responsable"
+              [value]="form().uploadedBy"
+              (input)="updateForm('uploadedBy', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group form-full">
+            <label class="form-label">Notas</label>
+            <textarea class="form-control form-textarea" placeholder="Observaciones sobre el documento…"
+              [value]="form().notes"
+              (input)="updateForm('notes', $any($event.target).value)"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn-primary" (click)="saveForm()" [disabled]="!isFormValid()">
+          {{ editingId() !== null ? 'Guardar cambios' : 'Subir documento' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MODAL — Confirmar eliminación
+══════════════════════════════════════════ -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar documento</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-msg">¿Está seguro de que desea eliminar este documento? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="doDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
