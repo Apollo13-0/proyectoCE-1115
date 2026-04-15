@@ -2,14 +2,30 @@ import { Routes } from '@angular/router';
 import { ShellComponent } from './layout/shell/shell';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'calendar', pathMatch: 'full' },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
   {
-    path: '', component: ShellComponent,
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login').then(m => m.LoginComponent)
+  },
+
+  {
+    path: '',
+    component: ShellComponent,
     children: [
       {
+        path: 'dashboard',
+        loadComponent: () =>
+          import('./features/dashboard/dashboard').then(m => m.DashboardComponent)
+      },
+      {
         path: 'calendar',
-        loadComponent: () => import('./features/calendar/calendar').then(m => m.CalendarComponent)
-      }
+        loadComponent: () =>
+          import('./features/calendar/calendar').then(m => m.CalendarComponent)
+      },
     ]
-  }
+  },
+
+  { path: '**', redirectTo: 'dashboard' }
 ];

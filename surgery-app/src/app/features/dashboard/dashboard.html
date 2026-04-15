@@ -1,1 +1,140 @@
-<p>dashboard works!</p>
+<div class="dash-page">
+
+  <!-- ── GREETING HEADER ──────────────────────── -->
+  <div class="dash-header">
+    <div>
+      <h1 class="dash-greeting">{{ greeting }}, <span class="dash-name">{{ userEmail.split('@')[0] }}</span></h1>
+      <p class="dash-date">{{ today | date:"EEEE d 'de' MMMM 'de' yyyy" : '' : 'es' | titlecase }}</p>
+    </div>
+    <a class="btn-primary" routerLink="/surgeries">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path [attr.d]="icons['plus']"/>
+      </svg>
+      Nueva cirugía
+    </a>
+  </div>
+
+  <!-- ── STAT CARDS ────────────────────────────── -->
+  <div class="stats-grid">
+    @for (stat of stats; track stat.label) {
+      <div class="stat-card" [class]="'stat-' + stat.color">
+        <div class="stat-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons[stat.icon]"/>
+          </svg>
+        </div>
+        <div class="stat-body">
+          <div class="stat-value">{{ stat.value }}</div>
+          <div class="stat-label">{{ stat.label }}</div>
+          <div class="stat-sub">{{ stat.sub }}</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- ── MAIN GRID ─────────────────────────────── -->
+  <div class="dash-grid">
+
+    <!-- Recent surgeries -->
+    <div class="dash-card dash-card--wide">
+      <div class="card-header">
+        <div>
+          <h3 class="card-title">Cirugías recientes</h3>
+          <p class="card-sub">Últimas cirugías registradas en el sistema</p>
+        </div>
+        <a class="card-link" routerLink="/surgeries">
+          Ver todas
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons['arrow']"/>
+          </svg>
+        </a>
+      </div>
+
+      @if (recentSurgeries.length === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+              <path [attr.d]="icons['surgeries']"/>
+            </svg>
+          </div>
+          <p class="empty-title">Sin cirugías registradas</p>
+          <p class="empty-sub">Las cirugías aparecerán aquí una vez conectada la base de datos</p>
+        </div>
+      }
+
+      @if (recentSurgeries.length > 0) {
+        <table class="dash-table">
+          <thead>
+            <tr>
+              <th>Procedimiento</th>
+              <th>Paciente</th>
+              <th>Cirujano</th>
+              <th>Hora</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of recentSurgeries; track s.id) {
+              <tr>
+                <td class="td-title">{{ s.title }}</td>
+                <td>{{ s.patient }}</td>
+                <td>{{ s.surgeon }}</td>
+                <td>{{ s.time }}</td>
+                <td>
+                  <span class="status-badge" [class]="'status-' + s.status">
+                    {{ statusLabel[s.status] }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Right column -->
+    <div class="dash-right">
+
+      <!-- Quick links -->
+      <div class="dash-card">
+        <div class="card-header">
+          <h3 class="card-title">Accesos rápidos</h3>
+        </div>
+        <div class="quick-links">
+          @for (link of quickLinks; track link.route) {
+            <a class="quick-link" [routerLink]="link.route">
+              <div class="quick-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path [attr.d]="icons[link.icon]"/>
+                </svg>
+              </div>
+              <span>{{ link.label }}</span>
+              <svg class="quick-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
+            </a>
+          }
+        </div>
+      </div>
+
+      <!-- Today's summary -->
+      <div class="dash-card dash-card--today">
+        <div class="card-header">
+          <h3 class="card-title">Hoy</h3>
+          <span class="today-date">{{ today | date:'d MMM' : '' : 'es' | titlecase }}</span>
+        </div>
+        <div class="empty-state empty-state--sm">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+              <path [attr.d]="icons['calendar']"/>
+            </svg>
+          </div>
+          <p class="empty-sub">Sin cirugías programadas para hoy</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
