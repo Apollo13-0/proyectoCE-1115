@@ -9,16 +9,9 @@ Sistema base para gestion de citas y cirugias con ejecucion en Docker.
 
 ## Variables de entorno (.env)
 
-Crear un archivo `.env` en la raiz del proyecto con:
+Crear un archivo `.env` en la raiz del proyecto con los campos mostrados en .env.example
 
-```env
-APP_NAME=proyectoCE-1115 API
-APP_PORT=8000
-DB_NAME=proyectoce
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_PORT=5432
-```
+
 
 ## Levantar todo el stack
 
@@ -33,7 +26,7 @@ Servicios:
 - App API: http://localhost:8000
 - Health API: http://localhost:8000/health
 - DB health API: http://localhost:8000/db-health
-- PostgreSQL: localhost:5432
+- PostgreSQL: localhost:<puerto seleccionado>
 
 ## Base de datos
 
