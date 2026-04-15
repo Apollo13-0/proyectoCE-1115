@@ -1,1 +1,309 @@
-<p>surgeries works!</p>
+<div class="surg-page">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="surg-header">
+    <div>
+      <h1 class="surg-title">Cirugías</h1>
+      <p class="surg-sub">Gestión completa de cirugías programadas</p>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path [attr.d]="icons['plus']"/>
+      </svg>
+      Nueva cirugía
+    </button>
+  </div>
+
+  <!-- ── STATUS TABS ──────────────────────────── -->
+  <div class="status-tabs">
+    <button class="status-tab" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">
+      Todas <span class="tab-count">{{ counts().all }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'scheduled'" (click)="filterStatus.set('scheduled')">
+      Programadas <span class="tab-count scheduled">{{ counts().scheduled }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'in-progress'" (click)="filterStatus.set('in-progress')">
+      En curso <span class="tab-count progress">{{ counts().inProgress }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'completed'" (click)="filterStatus.set('completed')">
+      Completadas <span class="tab-count completed">{{ counts().completed }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'cancelled'" (click)="filterStatus.set('cancelled')">
+      Canceladas <span class="tab-count cancelled">{{ counts().cancelled }}</span>
+    </button>
+  </div>
+
+  <!-- ── TABLE CARD ───────────────────────────── -->
+  <div class="table-card">
+
+    <!-- Search bar -->
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['search']"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por procedimiento, paciente o cirujano…"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    @if (filtered().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons['empty']"/>
+          </svg>
+        </div>
+        <p class="empty-title">
+          {{ surgeries().length === 0 ? 'Sin cirugías registradas' : 'Sin resultados' }}
+        </p>
+        <p class="empty-sub">
+          {{ surgeries().length === 0
+            ? 'Crea la primera cirugía con el botón "Nueva cirugía"'
+            : 'Intenta ajustar el filtro o la búsqueda' }}
+        </p>
+        @if (surgeries().length === 0) {
+          <button class="btn-primary mt" (click)="openCreate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path [attr.d]="icons['plus']"/>
+            </svg>
+            Nueva cirugía
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Table -->
+    @if (filtered().length > 0) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Procedimiento</th>
+              <th>Paciente</th>
+              <th>Cirujano</th>
+              <th>Anestesiólogo</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Quirófano</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filtered(); track s.id) {
+              <tr>
+                <td class="td-main">
+                  <div class="td-title">{{ s.title }}</div>
+                  <div class="td-type">{{ s.type }}</div>
+                </td>
+                <td>{{ s.patient }}</td>
+                <td>{{ s.surgeon }}</td>
+                <td>{{ s.anesthesiologist }}</td>
+                <td>{{ s.date | date:'dd/MM/yyyy' }}</td>
+                <td>{{ s.time }}</td>
+                <td>{{ s.operatingRoom || '—' }}</td>
+                <td>
+                  <span class="badge" [class]="'badge-' + s.status">
+                    {{ statusLabel[s.status] }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn" (click)="openEdit(s)" title="Editar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['edit']"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn action-btn--danger" (click)="confirmDelete(s.id!)" title="Eliminar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['trash']"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Crear / Editar
+══════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ editingId() ? 'Editar cirugía' : 'Nueva cirugía' }}</h3>
+          <p class="modal-sub">Complete todos los campos requeridos</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+
+          <!-- Procedimiento -->
+          <div class="form-group form-full">
+            <label class="form-label">Procedimiento <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Ej. Apendicectomía"
+              [value]="form().title"
+              (input)="updateForm('title', $any($event.target).value)" />
+          </div>
+
+          <!-- Tipo -->
+          <div class="form-group">
+            <label class="form-label">Tipo de cirugía <span class="req">*</span></label>
+            <select class="form-control"
+              [value]="form().type"
+              (change)="updateForm('type', $any($event.target).value)">
+              <option value="">Seleccionar…</option>
+              @for (t of surgeryTypes; track t) {
+                <option [value]="t">{{ t }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Quirófano -->
+          <div class="form-group">
+            <label class="form-label">Quirófano</label>
+            <select class="form-control"
+              [value]="form().operatingRoom"
+              (change)="updateForm('operatingRoom', $any($event.target).value)">
+              <option value="">Seleccionar…</option>
+              @for (r of operatingRooms; track r) {
+                <option [value]="r">{{ r }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Paciente -->
+          <div class="form-group">
+            <label class="form-label">Paciente <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Nombre completo"
+              [value]="form().patient"
+              (input)="updateForm('patient', $any($event.target).value)" />
+          </div>
+
+          <!-- Cirujano -->
+          <div class="form-group">
+            <label class="form-label">Cirujano principal <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Dr. Nombre Apellido"
+              [value]="form().surgeon"
+              (input)="updateForm('surgeon', $any($event.target).value)" />
+          </div>
+
+          <!-- Anestesiólogo -->
+          <div class="form-group">
+            <label class="form-label">Anestesiólogo <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Dr. Nombre Apellido"
+              [value]="form().anesthesiologist"
+              (input)="updateForm('anesthesiologist', $any($event.target).value)" />
+          </div>
+
+          <!-- Asistentes -->
+          <div class="form-group form-full">
+            <label class="form-label">Asistentes</label>
+            <input class="form-control" type="text" placeholder="Nombres separados por coma"
+              [value]="form().assistants"
+              (input)="updateForm('assistants', $any($event.target).value)" />
+          </div>
+
+          <!-- Fecha -->
+          <div class="form-group">
+            <label class="form-label">Fecha <span class="req">*</span></label>
+            <input class="form-control" type="date"
+              [value]="form().date"
+              (change)="updateForm('date', $any($event.target).value)" />
+          </div>
+
+          <!-- Hora -->
+          <div class="form-group">
+            <label class="form-label">Hora <span class="req">*</span></label>
+            <input class="form-control" type="time"
+              [value]="form().time"
+              (change)="updateForm('time', $any($event.target).value)" />
+          </div>
+
+          <!-- Duración -->
+          <div class="form-group">
+            <label class="form-label">Duración (min)</label>
+            <input class="form-control" type="number" min="15" step="15"
+              [value]="form().duration"
+              (input)="updateForm('duration', +$any($event.target).value)" />
+          </div>
+
+          <!-- Estado -->
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control"
+              [value]="form().status"
+              (change)="updateForm('status', $any($event.target).value)">
+              @for (opt of statusOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Notas -->
+          <div class="form-group form-full">
+            <label class="form-label">Notas</label>
+            <textarea class="form-control form-textarea" placeholder="Observaciones, indicaciones especiales…"
+              [value]="form().notes"
+              (input)="updateForm('notes', $any($event.target).value)"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn-primary" (click)="saveForm()" [disabled]="!isFormValid()">
+          {{ editingId() ? 'Guardar cambios' : 'Crear cirugía' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MODAL — Confirmar eliminación
+══════════════════════════════════════════ -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar cirugía</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-msg">¿Está seguro de que desea eliminar esta cirugía? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="doDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

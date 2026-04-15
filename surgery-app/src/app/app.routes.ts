@@ -24,6 +24,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/calendar/calendar').then(m => m.CalendarComponent)
       },
+      {
+        path: 'surgeries',
+        loadComponent: () =>
+          import('./features/surgeries/surgeries').then(m => m.SurgeriesComponent)
+      },
     ]
   },
 
