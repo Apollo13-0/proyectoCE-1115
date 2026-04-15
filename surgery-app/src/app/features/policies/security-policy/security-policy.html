@@ -1,0 +1,156 @@
+<div class="policy-shell">
+  <div class="policy-container">
+
+    <div class="policy-back">
+      <a routerLink="/login" class="back-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Volver al inicio
+      </a>
+    </div>
+
+    <div class="policy-header">
+      <div class="policy-badge">Política de Seguridad</div>
+      <h1 class="policy-title">Políticas de seguridad del sistema</h1>
+      <p class="policy-meta">Última actualización: {{ lastUpdated }} · SurgicalOS v1.0</p>
+    </div>
+
+    <div class="policy-body">
+
+      <section>
+        <h2>1. Alcance y propósito</h2>
+        <p>Esta política aplica a todos los usuarios del sistema SurgicalOS, incluyendo administradores, cirujanos, anestesiólogos y pacientes. El propósito es garantizar la <strong>confidencialidad, integridad y disponibilidad</strong> de la información clínica gestionada por el sistema.</p>
+      </section>
+
+      <section>
+        <h2>2. Principios de seguridad</h2>
+        <div class="principle-cards">
+          <div class="principle-card">
+            <div class="principle-icon navy">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+            </div>
+            <div>
+              <div class="principle-title">Mínimo privilegio</div>
+              <div class="principle-desc">Cada rol de usuario accede únicamente a las funciones y datos estrictamente necesarios para su labor.</div>
+            </div>
+          </div>
+          <div class="principle-card">
+            <div class="principle-icon teal">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="principle-title">Seguridad por capas</div>
+              <div class="principle-desc">Controles de seguridad aplicados en múltiples niveles: frontend (guards), backend (middleware) y base de datos (permisos).</div>
+            </div>
+          </div>
+          <div class="principle-card">
+            <div class="principle-icon sky">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div>
+              <div class="principle-title">Fallos seguros</div>
+              <div class="principle-desc">Ante cualquier error, el sistema deniega el acceso por defecto y no expone datos sensibles.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. Roles y control de acceso</h2>
+        <div class="roles-table-wrap">
+          <table class="cookie-table">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th>Acceso permitido</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="role-pill admin">Administrador</span></td>
+                <td>Acceso completo a todas las secciones del sistema</td>
+              </tr>
+              <tr>
+                <td><span class="role-pill surgeon">Cirujano</span></td>
+                <td>Cirugías, calendario, pacientes, documentos</td>
+              </tr>
+              <tr>
+                <td><span class="role-pill anest">Anestesiólogo</span></td>
+                <td>Cirugías, calendario, documentos</td>
+              </tr>
+              <tr>
+                <td><span class="role-pill patient">Paciente</span></td>
+                <td>Calendario (solo lectura), documentos propios</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section>
+        <h2>4. Política de contraseñas</h2>
+        <ul>
+          <li>Longitud mínima de <strong>8 caracteres</strong>.</li>
+          <li>Debe incluir al menos una mayúscula, una minúscula y un número.</li>
+          <li>Caducidad cada <strong>90 días</strong>. El sistema solicitará cambio de contraseña.</li>
+          <li>No se permite reutilizar las últimas 5 contraseñas.</li>
+          <li>Bloqueo de cuenta tras <strong>5 intentos fallidos</strong> consecutivos.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>5. Gestión de sesiones</h2>
+        <ul>
+          <li>Las sesiones expiran automáticamente tras <strong>60 minutos</strong> de inactividad.</li>
+          <li>Al cerrar el navegador se cierra la sesión activa.</li>
+          <li>No se permite el uso simultáneo de una misma cuenta desde múltiples dispositivos.</li>
+          <li>Toda sesión queda registrada con fecha, hora e IP de acceso.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>6. Manejo de datos sensibles</h2>
+        <p>La información clínica de los pacientes se clasifica como <strong>datos sensibles</strong> y se gestiona bajo los siguientes principios:</p>
+        <ul>
+          <li>Almacenamiento cifrado en la base de datos (AES-256).</li>
+          <li>Transmisión exclusivamente sobre HTTPS/TLS.</li>
+          <li>Acceso restringido según el rol del usuario (mínimo privilegio).</li>
+          <li>Los documentos PDF se almacenan en servidores seguros con acceso autenticado.</li>
+          <li>No se comparte información con terceros sin consentimiento explícito del paciente.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>7. Uso aceptable del sistema</h2>
+        <ul>
+          <li>El sistema es de uso <strong>exclusivo institucional</strong> para la gestión de cirugías.</li>
+          <li>Queda prohibido el acceso no autorizado a cuentas de otros usuarios.</li>
+          <li>No se permite subir documentos con contenido malicioso o no relacionado al ámbito clínico.</li>
+          <li>Los usuarios son responsables de mantener la confidencialidad de sus credenciales.</li>
+          <li>Cualquier incidente de seguridad debe reportarse al administrador del sistema.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>8. Referencia normativa</h2>
+        <p>Esta política se basa en los lineamientos del <strong>OWASP Top 10</strong>, las guías de implementación segura de OWASP, y los estándares de seguridad de la información del curso CE-1115 del Instituto Tecnológico de Costa Rica.</p>
+      </section>
+
+    </div>
+
+    <div class="policy-footer">
+      <p>SurgicalOS — Proyecto CE-1115 Seguridad de la Información · ITCR · I Semestre 2026</p>
+    </div>
+
+  </div>
+</div>
