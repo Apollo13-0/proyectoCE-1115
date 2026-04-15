@@ -1,0 +1,300 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+:host {
+  --navy:      #2F4156;
+  --navy-deep: #243347;
+  --teal:      #567C8D;
+  --sky:       #C8D9E6;
+  --beige:     #F5EFEB;
+  --white:     #FFFFFF;
+
+  --text-navy:  #2F4156;
+  --text-teal:  #567C8D;
+  --text-muted: #8fa3b1;
+  --text-body:  #4a6070;
+
+  --border:     #e2eaf0;
+  --shadow:     0 1px 4px rgba(47,65,86,0.07), 0 2px 12px rgba(47,65,86,0.04);
+
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --t:    180ms;
+
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  display: block;
+}
+
+/* ── TOPBAR ─────────────────────────────────── */
+.topbar {
+  height: 64px;
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: fixed;
+  top: 0;
+  left: 260px;        /* matches sidebar width */
+  right: 0;
+  z-index: 90;
+  box-shadow: var(--shadow);
+  gap: 1rem;
+  transition: left 220ms cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ── LEFT ───────────────────────────────────── */
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.page-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--navy);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.crumb-link {
+  color: var(--teal);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--t) var(--ease);
+}
+
+.crumb-link:hover { color: var(--navy); }
+
+.crumb-sep { opacity: 0.4; }
+
+.crumb-current { color: var(--text-muted); }
+
+/* ── RIGHT ──────────────────────────────────── */
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+/* date chip */
+.date-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.85rem;
+  background: var(--beige);
+  border: 1px solid rgba(86,124,141,0.12);
+  border-radius: var(--r-pill);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-body);
+  white-space: nowrap;
+  text-transform: capitalize;
+}
+
+.date-icon { font-size: 0.92rem; opacity: 0.6; }
+
+/* icon button */
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--r-md);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-body);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--t) var(--ease);
+  position: relative;
+}
+
+.icon-btn:hover,
+.icon-btn.active {
+  background: var(--beige);
+  border-color: rgba(86,124,141,0.2);
+  color: var(--navy);
+}
+
+/* notification badge */
+.notif-dot {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #e05252;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid white;
+  line-height: 1;
+}
+
+/* notifications dropdown */
+.notif-wrapper { position: relative; }
+
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 320px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: 0 8px 32px rgba(47,65,86,0.14), 0 2px 8px rgba(47,65,86,0.08);
+  overflow: hidden;
+  animation: dropDown 200ms cubic-bezier(0.34,1.4,0.64,1);
+  z-index: 200;
+}
+
+.notif-header {
+  padding: 1rem 1.1rem 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--navy);
+}
+
+.notif-mark-read {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--teal);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: color var(--t) var(--ease);
+  padding: 0;
+}
+
+.notif-mark-read:hover { color: var(--navy); }
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-bottom: 1px solid rgba(226,234,240,0.6);
+  transition: background var(--t) var(--ease);
+  cursor: default;
+}
+
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: rgba(245,239,235,0.6); }
+.notif-item.unread { background: rgba(200,217,230,0.08); }
+
+.notif-dot-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: transparent;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.notif-dot-indicator.visible { background: var(--teal); }
+
+.notif-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--navy);
+  line-height: 1.4;
+}
+
+.notif-time {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+/* user pill */
+.user-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.75rem 0.35rem 0.35rem;
+  background: var(--beige);
+  border: 1px solid rgba(86,124,141,0.12);
+  border-radius: var(--r-pill);
+  cursor: default;
+  transition: all var(--t) var(--ease);
+}
+
+.user-pill:hover {
+  border-color: rgba(86,124,141,0.25);
+  background: var(--sky);
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal), var(--navy));
+  color: var(--beige);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* ── ANIMATIONS ─────────────────────────────── */
+@keyframes dropDown {
+  from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.chip-icon { width: 15px; height: 15px; flex-shrink: 0; }
+
+/* ── TYPOGRAPHY OVERRIDES — Plus Jakarta Sans ── */
+.topbar,
+.topbar * {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+.page-title      { font-size: 1.4rem  !important; font-weight: 800 !important; letter-spacing: -0.02em; }
+.breadcrumb      { font-size: 0.82rem !important; }
+.crumb-link      { font-weight: 600   !important; }
+.date-chip       { font-size: 0.88rem !important; font-weight: 600 !important; }
+.notif-title     { font-size: 0.95rem !important; font-weight: 700 !important; }
+.notif-text      { font-size: 0.88rem !important; font-weight: 500 !important; }
+.notif-time      { font-size: 0.75rem !important; }
+.notif-mark-read { font-size: 0.78rem !important; font-weight: 600 !important; }
+.user-name       { font-size: 0.9rem  !important; font-weight: 700 !important; }

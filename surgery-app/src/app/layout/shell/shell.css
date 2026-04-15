@@ -1,0 +1,22 @@
+:host { display: block; }
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: #f0e9e3;
+}
+
+.shell-main {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 220ms cubic-bezier(0.4,0,0.2,1);
+}
+
+.shell-content {
+  flex: 1;
+  padding-top: 64px;        /* topbar height */
+  padding: 64px 0 0 0;
+}
