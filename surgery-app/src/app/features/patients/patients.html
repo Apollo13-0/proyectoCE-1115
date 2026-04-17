@@ -1,0 +1,387 @@
+<div class="pat-page">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="pat-header">
+    <div>
+      <h1 class="pat-title">Pacientes</h1>
+      <p class="pat-sub">Gestión del registro de pacientes</p>
+    </div>
+    <button class="btn-primary" (click)="openCreate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path [attr.d]="icons['plus']"/>
+      </svg>
+      Nuevo paciente
+    </button>
+  </div>
+
+  <!-- ── TABS ─────────────────────────────────── -->
+  <div class="status-tabs">
+    <button class="status-tab" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">
+      Todos <span class="tab-count">{{ counts().all }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'active'" (click)="filterStatus.set('active')">
+      Activos <span class="tab-count active">{{ counts().active }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'inactive'" (click)="filterStatus.set('inactive')">
+      Inactivos <span class="tab-count inactive">{{ counts().inactive }}</span>
+    </button>
+  </div>
+
+  <!-- ── TABLE CARD ───────────────────────────── -->
+  <div class="table-card">
+
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['search']"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por nombre, cédula o correo…"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)" />
+      </div>
+    </div>
+
+    <!-- Empty state -->
+    @if (filtered().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons['empty']"/>
+          </svg>
+        </div>
+        <p class="empty-title">
+          {{ patients().length === 0 ? 'Sin pacientes registrados' : 'Sin resultados' }}
+        </p>
+        <p class="empty-sub">
+          {{ patients().length === 0
+            ? 'Registra el primer paciente con el botón "Nuevo paciente"'
+            : 'Intenta ajustar el filtro o la búsqueda' }}
+        </p>
+        @if (patients().length === 0) {
+          <button class="btn-primary mt" (click)="openCreate()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <path [attr.d]="icons['plus']"/>
+            </svg>
+            Nuevo paciente
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Table -->
+    @if (filtered().length > 0) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Paciente</th>
+              <th>Cédula</th>
+              <th>Edad</th>
+              <th>Género</th>
+              <th>Teléfono</th>
+              <th>Correo</th>
+              <th>Tipo sangre</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (p of filtered(); track p.id) {
+              <tr>
+                <td>
+                  <div class="patient-cell">
+                    <div class="patient-avatar">{{ initials(p) }}</div>
+                    <div>
+                      <div class="patient-name">{{ fullName(p) }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ p.idNumber }}</td>
+                <td>{{ age(p.birthDate) }} años</td>
+                <td>{{ genderLabel[p.gender] }}</td>
+                <td>{{ p.phone }}</td>
+                <td>{{ p.email || '—' }}</td>
+                <td>
+                  @if (p.bloodType) {
+                    <span class="blood-badge">{{ p.bloodType }}</span>
+                  } @else {
+                    <span>—</span>
+                  }
+                </td>
+                <td>
+                  <span class="badge" [class]="'badge-' + p.status">
+                    {{ p.status === 'active' ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn" (click)="openDetail(p)" title="Ver detalle">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['eye']"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn" (click)="openEdit(p)" title="Editar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['edit']"/>
+                      </svg>
+                    </button>
+                    <button class="action-btn action-btn--danger" (click)="confirmDelete(p.id!)" title="Eliminar">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['trash']"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL — Crear / Editar
+══════════════════════════════════════════ -->
+@if (showModal()) {
+  <div class="modal-backdrop" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ editingId() !== null ? 'Editar paciente' : 'Nuevo paciente' }}</h3>
+          <p class="modal-sub">Los campos marcados con * son obligatorios</p>
+        </div>
+        <button class="modal-close" (click)="closeModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-section-title">Datos personales</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nombre <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Nombre(s)"
+              [value]="form().firstName"
+              (input)="updateForm('firstName', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Apellidos <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Apellido(s)"
+              [value]="form().lastName"
+              (input)="updateForm('lastName', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cédula <span class="req">*</span></label>
+            <input class="form-control" type="text" placeholder="Número de identificación"
+              [value]="form().idNumber"
+              (input)="updateForm('idNumber', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha de nacimiento <span class="req">*</span></label>
+            <input class="form-control" type="date"
+              [value]="form().birthDate"
+              (change)="updateForm('birthDate', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Género</label>
+            <select class="form-control"
+              [value]="form().gender"
+              (change)="updateForm('gender', $any($event.target).value)">
+              @for (g of genderOptions; track g.value) {
+                <option [value]="g.value">{{ g.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de sangre</label>
+            <select class="form-control"
+              [value]="form().bloodType"
+              (change)="updateForm('bloodType', $any($event.target).value)">
+              <option value="">Seleccionar…</option>
+              @for (b of bloodTypes; track b) {
+                <option [value]="b">{{ b }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section-title mt">Contacto</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Teléfono <span class="req">*</span></label>
+            <input class="form-control" type="tel" placeholder="Ej. 8888-8888"
+              [value]="form().phone"
+              (input)="updateForm('phone', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correo electrónico</label>
+            <input class="form-control" type="email" placeholder="correo@ejemplo.com"
+              [value]="form().email"
+              (input)="updateForm('email', $any($event.target).value)" />
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Dirección</label>
+            <input class="form-control" type="text" placeholder="Dirección completa"
+              [value]="form().address"
+              (input)="updateForm('address', $any($event.target).value)" />
+          </div>
+        </div>
+
+        <div class="form-section-title mt">Información médica</div>
+        <div class="form-grid">
+          <div class="form-group form-full">
+            <label class="form-label">Alergias</label>
+            <input class="form-control" type="text" placeholder="Ej. Penicilina, látex…"
+              [value]="form().allergies"
+              (input)="updateForm('allergies', $any($event.target).value)" />
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Historial médico relevante</label>
+            <textarea class="form-control form-textarea"
+              placeholder="Condiciones preexistentes, cirugías anteriores…"
+              [value]="form().medicalHistory"
+              (input)="updateForm('medicalHistory', $any($event.target).value)"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Póliza de seguro</label>
+            <input class="form-control" type="text" placeholder="Número de póliza"
+              [value]="form().insurancePolicy"
+              (input)="updateForm('insurancePolicy', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select class="form-control"
+              [value]="form().status"
+              (change)="updateForm('status', $any($event.target).value)">
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button class="btn-primary" (click)="saveForm()" [disabled]="!isFormValid()">
+          {{ editingId() !== null ? 'Guardar cambios' : 'Registrar paciente' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MODAL — Detalle del paciente
+══════════════════════════════════════════ -->
+@if (showDetailModal() && detailPatient()) {
+  <div class="modal-backdrop" (click)="closeDetailModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+        <div class="detail-header-inner">
+          <div class="detail-avatar">{{ initials(detailPatient()!) }}</div>
+          <div>
+            <h3 class="modal-title">{{ fullName(detailPatient()!) }}</h3>
+            <p class="modal-sub">Cédula: {{ detailPatient()!.idNumber }}</p>
+          </div>
+        </div>
+        <button class="modal-close" (click)="closeDetailModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">Edad</div>
+            <div class="detail-value">{{ age(detailPatient()!.birthDate) }} años</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Género</div>
+            <div class="detail-value">{{ genderLabel[detailPatient()!.gender] }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Tipo de sangre</div>
+            <div class="detail-value">{{ detailPatient()!.bloodType || '—' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Estado</div>
+            <div class="detail-value">
+              <span class="badge" [class]="'badge-' + detailPatient()!.status">
+                {{ detailPatient()!.status === 'active' ? 'Activo' : 'Inactivo' }}
+              </span>
+            </div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Teléfono</div>
+            <div class="detail-value">{{ detailPatient()!.phone }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Correo</div>
+            <div class="detail-value">{{ detailPatient()!.email || '—' }}</div>
+          </div>
+          <div class="detail-item detail-full">
+            <div class="detail-label">Dirección</div>
+            <div class="detail-value">{{ detailPatient()!.address || '—' }}</div>
+          </div>
+          <div class="detail-item detail-full">
+            <div class="detail-label">Alergias</div>
+            <div class="detail-value">{{ detailPatient()!.allergies || 'Ninguna reportada' }}</div>
+          </div>
+          <div class="detail-item detail-full">
+            <div class="detail-label">Historial médico</div>
+            <div class="detail-value">{{ detailPatient()!.medicalHistory || '—' }}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">Póliza de seguro</div>
+            <div class="detail-value">{{ detailPatient()!.insurancePolicy || '—' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeDetailModal()">Cerrar</button>
+        <button class="btn-primary" (click)="closeDetailModal(); openEdit(detailPatient()!)">
+          Editar paciente
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
+
+<!-- ══════════════════════════════════════════
+     MODAL — Confirmar eliminación
+══════════════════════════════════════════ -->
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar paciente</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-msg">¿Está seguro de que desea eliminar este paciente? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="doDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}

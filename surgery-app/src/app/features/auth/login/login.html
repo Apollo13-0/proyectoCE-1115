@@ -1,0 +1,161 @@
+<!-- ── COOKIE BANNER ───────────────────────── -->
+@if (!cookieAccepted()) {
+  <div class="cookie-banner">
+    <div class="cookie-text">
+      <strong>Política de Cookies</strong> — Usamos cookies estrictamente necesarias para gestionar su sesión. Sin rastreo ni publicidad.
+      <a href="/politica-cookies" target="_blank">Ver política completa</a>
+    </div>
+    <div class="cookie-actions">
+      <button class="btn-cookie-decline" (click)="declineCookies()">Rechazar</button>
+      <button class="btn-cookie-accept"  (click)="acceptCookies()">Aceptar</button>
+    </div>
+  </div>
+}
+
+<!-- ── LOGIN SHELL ──────────────────────────── -->
+<div class="login-shell">
+
+  <!-- ── LEFT — Navy branding panel ─────────── -->
+  <div class="login-left">
+    <div class="left-line"></div>
+    <div class="login-left-inner">
+
+      <div class="brand">
+        <div class="brand-icon">✚</div>
+        <span class="brand-name">SurgicalOS</span>
+      </div>
+
+      <div class="hero-text">
+        <h1>Gestión quirúrgica<br><em>de precisión</em></h1>
+        <p>Plataforma integral para la gestión de citas, cirugías, equipo médico y documentación clínica del TEC.</p>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <span class="feature-text">Calendario quirúrgico con vista por fecha</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <span class="feature-text">Gestión de cirujanos, anestesiólogos y asistentes</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <span class="feature-text">Subida y gestión de documentación clínica en PDF</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-dot"></div>
+          <span class="feature-text">Control de acceso por rol con mínimo privilegio</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RIGHT — Beige form panel ────────────── -->
+  <div class="login-right">
+    <div class="login-form-card">
+
+      <div class="form-top">
+        <h2>Bienvenido</h2>
+        <p>Ingrese con sus credenciales institucionales</p>
+      </div>
+
+      <!-- Demo role pills -->
+      <div class="demo-section">
+        <div class="demo-label">Acceso rápido</div>
+        <div class="demo-pills">
+          @for (u of demoUsers; track u.email) {
+            <button
+              class="demo-pill"
+              (click)="fillDemo(u)"
+              [class.active]="email === u.email"
+              type="button">
+              <span class="demo-pill-icon">{{ u.icon }}</span>
+              <span>{{ u.label }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="divider">o ingrese manualmente</div>
+
+      <!-- Error -->
+      @if (error()) {
+        <div class="alert-danger animate-fade-in">
+          <span>⚠</span>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <!-- Form -->
+      <form (ngSubmit)="onSubmit()" #loginForm="ngForm" novalidate>
+        <div class="form-stack">
+
+          <div class="form-group">
+            <label class="form-label" for="email">Correo electrónico</label>
+            <div class="input-wrapper">
+              <span class="input-icon">@</span>
+              <input
+                id="email"
+                type="email"
+                class="form-control input-with-icon"
+                placeholder="usuario@surgical.cr"
+                [(ngModel)]="email"
+                name="email"
+                autocomplete="email"
+                required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="password">Contraseña</label>
+            <div class="input-wrapper">
+              <span class="input-icon">⬤</span>
+              <input
+                id="password"
+                [type]="showPass() ? 'text' : 'password'"
+                class="form-control input-with-icon input-with-action"
+                placeholder="••••••••••"
+                [(ngModel)]="password"
+                name="password"
+                autocomplete="current-password"
+                required />
+              <button
+                type="button"
+                class="input-action"
+                (click)="showPass.set(!showPass())"
+                [attr.aria-label]="showPass() ? 'Ocultar' : 'Mostrar'">
+                {{ showPass() ? '🙈' : '👁' }}
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <br>
+
+        <button type="submit" class="btn-submit" [disabled]="loading()">
+          @if (!loading()) {
+            <span>Ingresar al sistema</span>
+          } @else {
+            <span class="loading-row">
+              <span class="spinner"></span>
+              Verificando…
+            </span>
+          }
+        </button>
+
+      </form>
+
+      <p class="login-footer-note">
+        Sistema de uso exclusivo institucional.<br>
+        Al ingresar acepta las <a href="/politicas" target="_blank">políticas de seguridad</a> vigentes.
+      </p>
+
+    </div>
+
+    <div class="login-version">SurgicalOS v1.0 &nbsp;·&nbsp; I Semestre 2026 &nbsp;·&nbsp; TEC</div>
+  </div>
+
+</div>
