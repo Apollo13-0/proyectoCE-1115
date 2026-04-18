@@ -35,5 +35,23 @@ services:
     ports:
       - "${APP_PORT}:8000"
 
+  frontend:
+    build:
+      context: ./surgery-app
+      dockerfile: Dockerfile
+    container_name: proyectoce_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    environment:
+      NODE_ENV: production
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 volumes:
   postgres_data:
