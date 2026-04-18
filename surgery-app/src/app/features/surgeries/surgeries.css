@@ -119,6 +119,9 @@
   background: var(--sky);
 }
 
+.btn-secondary:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-secondary svg { width: 16px; height: 16px; }
+
 .btn-danger {
   display: inline-flex;
   align-items: center;
@@ -209,6 +212,11 @@
   padding: 1.1rem 1.5rem;
   border-bottom: 1px solid var(--border);
   background: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .search-wrap {
@@ -245,6 +253,17 @@
   border-color: var(--teal);
   background: var(--white);
   box-shadow: 0 0 0 3px rgba(86,124,141,0.1);
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-date {
+  width: 150px;
 }
 
 /* table scroll */
@@ -305,6 +324,30 @@ tbody td {
 .badge-in-progress { background: rgba(217,119,6,0.10);   color: var(--c-progress);  }
 .badge-completed   { background: rgba(5,150,105,0.10);   color: var(--c-completed); }
 .badge-cancelled   { background: rgba(220,38,38,0.08);   color: var(--c-cancelled); }
+
+.status-select {
+  min-width: 160px;
+  background: var(--beige);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--navy);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.4rem 0.55rem;
+  outline: none;
+}
+
+.status-select:focus {
+  border-color: var(--teal);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(86,124,141,0.1);
+}
+
+.status-select:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
 
 /* ── ACTION BUTTONS ─────────────────────────── */
 .action-btns {
@@ -518,6 +561,32 @@ select.form-control option { background: white; color: var(--navy); }
   line-height: 1.6;
 }
 
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.detail-full {
+  grid-column: 1 / -1;
+}
+
+.detail-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+
+.detail-value {
+  color: var(--navy);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 /* ── ANIMATIONS ─────────────────────────────── */
 @keyframes fadeIn {
   from { opacity: 0; }
@@ -534,5 +603,8 @@ select.form-control option { background: white; color: var(--navy); }
   .surg-page  { padding: 1.25rem; }
   .form-grid  { grid-template-columns: 1fr; }
   .form-full  { grid-column: 1; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .detail-full { grid-column: 1; }
   .status-tabs { width: 100%; }
+  .filter-date { width: 100%; }
 }

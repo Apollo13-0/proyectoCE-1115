@@ -44,6 +44,16 @@
 
 .pat-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.3rem; }
 
+.error-banner {
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-sm);
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 /* ── BUTTONS ────────────────────────────────── */
 .btn-primary {
   display: inline-flex; align-items: center; gap: 0.45rem;

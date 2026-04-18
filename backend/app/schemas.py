@@ -6,12 +6,12 @@ from uuid import UUID
 
 # User schemas
 class UserBase(BaseModel):
-    first_name: Optional[str]
-    last_name: Optional[str]
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
     email: str
-    phone: Optional[str]
+    phone: Optional[str] = None
     role: UserRole
-    license_number: Optional[str]
+    license_number: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -26,20 +26,32 @@ class PatientBase(BaseModel):
     first_name: str
     last_name: str
     birth_date: date
-    sex: Optional[str]
-    identity_document: Optional[str]
-    insurance_provider: Optional[str]
-    insurance_policy_number: Optional[str]
-    emergency_contact_name: Optional[str]
-    emergency_contact_phone: Optional[str]
-    medical_notes: Optional[str]
+    sex: Optional[str] = None
+    identity_document: Optional[str] = None
+    insurance_provider: Optional[str] = None
+    insurance_policy_number: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    medical_notes: Optional[str] = None
 
 class PatientCreate(PatientBase):
     pass
 
+class PatientUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    birth_date: Optional[date] = None
+    sex: Optional[str] = None
+    identity_document: Optional[str] = None
+    insurance_provider: Optional[str] = None
+    insurance_policy_number: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    medical_notes: Optional[str] = None
+
 class PatientResponse(PatientBase):
     id: UUID
-    user_id: Optional[UUID]
+    user_id: Optional[UUID] = None
     created_at: datetime
 
 # Surgery schemas
@@ -47,9 +59,9 @@ class SurgeryBase(BaseModel):
     surgery_type: str
     scheduled_start: datetime
     scheduled_end: datetime
-    operating_room: Optional[str]
-    preop_notes: Optional[str]
-    postop_notes: Optional[str]
+    operating_room: Optional[str] = None
+    preop_notes: Optional[str] = None
+    postop_notes: Optional[str] = None
 
 class SurgeryCreate(SurgeryBase):
     patient_id: UUID
@@ -57,13 +69,17 @@ class SurgeryCreate(SurgeryBase):
     anesthesiologist_id: UUID
 
 class SurgeryUpdate(BaseModel):
-    status: Optional[SurgeryStatus]
-    scheduled_start: Optional[datetime]
-    scheduled_end: Optional[datetime]
-    operating_room: Optional[str]
-    preop_notes: Optional[str]
-    postop_notes: Optional[str]
-    cancellation_reason: Optional[str]
+    patient_id: Optional[UUID] = None
+    lead_surgeon_id: Optional[UUID] = None
+    anesthesiologist_id: Optional[UUID] = None
+    surgery_type: Optional[str] = None
+    status: Optional[SurgeryStatus] = None
+    scheduled_start: Optional[datetime] = None
+    scheduled_end: Optional[datetime] = None
+    operating_room: Optional[str] = None
+    preop_notes: Optional[str] = None
+    postop_notes: Optional[str] = None
+    cancellation_reason: Optional[str] = None
 
 class SurgeryResponse(SurgeryBase):
     id: UUID
@@ -72,24 +88,24 @@ class SurgeryResponse(SurgeryBase):
     anesthesiologist_id: UUID
     status: SurgeryStatus
     created_at: datetime
-    patient_name: Optional[str]
-    surgeon_name: Optional[str]
-    anesthesiologist_name: Optional[str]
+    patient_name: Optional[str] = None
+    surgeon_name: Optional[str] = None
+    anesthesiologist_name: Optional[str] = None
     assistants: List[dict] = []
 
 # Document schemas
 class DocumentBase(BaseModel):
     document_type: DocumentType
-    notes: Optional[str]
+    notes: Optional[str] = None
 
 class DocumentCreate(DocumentBase):
-    patient_id: Optional[UUID]
-    surgery_id: Optional[UUID]
+    patient_id: Optional[UUID] = None
+    surgery_id: Optional[UUID] = None
 
 class DocumentResponse(DocumentBase):
     id: UUID
-    patient_id: Optional[UUID]
-    surgery_id: Optional[UUID]
+    patient_id: Optional[UUID] = None
+    surgery_id: Optional[UUID] = None
     file_name: str
     mime_type: str
     file_size_bytes: int

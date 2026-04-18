@@ -28,6 +28,10 @@
     }
   </div>
 
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
   <!-- ── TABLE CARD ───────────────────────────── -->
   <div class="table-card">
     <div class="table-toolbar">

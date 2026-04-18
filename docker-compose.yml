@@ -34,6 +34,8 @@ services:
         condition: service_healthy
     ports:
       - "${APP_PORT}:8000"
+    volumes:
+      - uploads_data:/app/uploads
 
   frontend:
     build:
@@ -55,3 +57,4 @@ services:
 
 volumes:
   postgres_data:
+  uploads_data:

@@ -18,12 +18,13 @@ export class TopbarComponent {
   breadcrumbs: Breadcrumb[] = [];
   today = new Date();
 
-  userRole  = localStorage.getItem('user_role')  ?? 'admin';
-  userEmail = localStorage.getItem('user_email') ?? 'admin@surgical.cr';
+  userRole  = localStorage.getItem('user_role')  ?? 'patient';
+  userEmail = localStorage.getItem('user_email') ?? '';
 
   userInitials = computed(() => {
+    if (!this.userEmail) return 'US';
     const parts = this.userEmail.split('@')[0].split('.');
-    return parts.map((p: string) => p[0].toUpperCase()).join('').slice(0, 2);
+    return parts.map((p: string) => p[0]?.toUpperCase() ?? '').join('').slice(0, 2);
   });
 
   roleLabel: Record<string, string> = {
@@ -31,6 +32,7 @@ export class TopbarComponent {
     surgeon:          'Cirujano',
     anesthesiologist: 'Anestesiólogo',
     patient:          'Paciente',
+    assistant:         'Asistente',
   };
 
   routeTitles: Record<string, string> = {

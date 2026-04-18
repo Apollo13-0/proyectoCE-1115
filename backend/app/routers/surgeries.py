@@ -5,7 +5,7 @@ from ..database import get_db
 from ..auth import get_current_user
 from ..models import AppUser, Surgery
 from ..schemas import SurgeryCreate, SurgeryUpdate, SurgeryResponse, PaginatedResponse
-from ..services import get_surgeries, get_surgery, create_surgery, update_surgery, delete_surgery
+from ..services import get_surgeries, get_surgery, create_surgery, update_surgery, delete_surgery, serialize_surgery
 from ..permissions import require_role, can_view_surgery, can_modify_surgery
 from ..models import UserRole
 
@@ -45,7 +45,7 @@ def get_surgery_detail(
     surgery = get_surgery(db, surgery_id)
     if not surgery or not can_view_surgery(current_user, surgery):
         raise HTTPException(status_code=404, detail="Surgery not found")
-    return surgery
+    return serialize_surgery(db, surgery)
 
 @router.post("/", response_model=SurgeryResponse, status_code=status.HTTP_201_CREATED)
 def create_new_surgery(
@@ -53,7 +53,8 @@ def create_new_surgery(
     db: Session = Depends(get_db),
     current_user: Any = Depends(require_role([UserRole.ADMIN, UserRole.CIRUJANO]))
 ):
-    return create_surgery(db, surgery, current_user)
+    created = create_surgery(db, surgery, current_user)
+    return serialize_surgery(db, created)
 
 @router.put("/{surgery_id}", response_model=SurgeryResponse)
 def update_existing_surgery(
@@ -65,7 +66,12 @@ def update_existing_surgery(
     surgery = get_surgery(db, surgery_id)
     if not surgery or not can_modify_surgery(current_user, surgery):
         raise HTTPException(status_code=404, detail="Surgery not found or no permission")
-    return update_surgery(db, surgery_id, updates)
+    if current_user.role != UserRole.ADMIN:
+        updates.patient_id = None
+        updates.lead_surgeon_id = None
+        updates.anesthesiologist_id = None
+    surgery = update_surgery(db, surgery_id, updates)
+    return serialize_surgery(db, surgery)
 
 @router.patch("/{surgery_id}/status")
 def update_surgery_status(
@@ -78,8 +84,8 @@ def update_surgery_status(
     if not surgery or not can_modify_surgery(current_user, surgery):
         raise HTTPException(status_code=404, detail="Surgery not found or no permission")
     updates = SurgeryUpdate(status=status_update.get('status'))
-    update_surgery(db, surgery_id, updates)
-    return {"message": "Status updated"}
+    surgery = update_surgery(db, surgery_id, updates)
+    return serialize_surgery(db, surgery)
 
 @router.delete("/{surgery_id}")
 def delete_existing_surgery(
