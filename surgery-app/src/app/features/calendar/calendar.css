@@ -350,6 +350,14 @@
 .event-chip.event-completed   { background: rgba(5,150,105,0.10);   border-color: var(--c-completed); color: var(--c-completed);  }
 .event-chip.event-cancelled   { background: rgba(220,38,38,0.08);   border-color: var(--c-cancelled); color: var(--c-cancelled);  }
 
+/* New API status values */
+.event-chip.event-PROGRAMADA  { background: rgba(86,124,141,0.12);  border-color: var(--c-scheduled); color: var(--c-scheduled);  }
+.event-chip.event-EN_CURSO    { background: rgba(217,119,6,0.10);   border-color: var(--c-progress);  color: var(--c-progress);   }
+.event-chip.event-COMPLETADA  { background: rgba(5,150,105,0.10);   border-color: var(--c-completed); color: var(--c-completed);  }
+.event-chip.event-CANCELADA   { background: rgba(220,38,38,0.08);   border-color: var(--c-cancelled); color: var(--c-cancelled);  }
+.event-chip.event-SOLICITADA  { background: rgba(86,124,141,0.12);  border-color: var(--c-scheduled); color: var(--c-scheduled);  }
+.event-chip.event-PENDIENTE_VALIDACION { background: rgba(86,124,141,0.12);  border-color: var(--c-scheduled); color: var(--c-scheduled);  }
+
 .event-time  { opacity: 0.7; flex-shrink: 0; }
 .event-title { overflow: hidden; text-overflow: ellipsis; }
 
@@ -456,6 +464,14 @@
 .surgery-card.surgery-completed   { border-left-color: var(--c-completed); }
 .surgery-card.surgery-cancelled   { border-left-color: var(--c-cancelled); opacity: 0.7; }
 
+/* New API status values */
+.surgery-card.surgery-PROGRAMADA  { border-left-color: var(--c-scheduled); }
+.surgery-card.surgery-EN_CURSO    { border-left-color: var(--c-progress);  }
+.surgery-card.surgery-COMPLETADA  { border-left-color: var(--c-completed); }
+.surgery-card.surgery-CANCELADA   { border-left-color: var(--c-cancelled); opacity: 0.7; }
+.surgery-card.surgery-SOLICITADA  { border-left-color: var(--c-scheduled); }
+.surgery-card.surgery-PENDIENTE_VALIDACION { border-left-color: var(--c-scheduled); }
+
 .surgery-card-top {
   display: flex;
   align-items: center;
@@ -485,6 +501,14 @@
 .status-in-progress { background: rgba(217,119,6,0.10);   color: var(--c-progress);  }
 .status-completed   { background: rgba(5,150,105,0.10);   color: var(--c-completed); }
 .status-cancelled   { background: rgba(220,38,38,0.08);   color: var(--c-cancelled); }
+
+/* New API status values */
+.status-PROGRAMADA  { background: rgba(86,124,141,0.12);  color: var(--c-scheduled); }
+.status-EN_CURSO    { background: rgba(217,119,6,0.10);   color: var(--c-progress);  }
+.status-COMPLETADA  { background: rgba(5,150,105,0.10);   color: var(--c-completed); }
+.status-CANCELADA   { background: rgba(220,38,38,0.08);   color: var(--c-cancelled); }
+.status-SOLICITADA  { background: rgba(86,124,141,0.12);  color: var(--c-scheduled); }
+.status-PENDIENTE_VALIDACION { background: rgba(86,124,141,0.12);  color: var(--c-scheduled); }
 
 .surgery-title {
   font-size: 1rem;

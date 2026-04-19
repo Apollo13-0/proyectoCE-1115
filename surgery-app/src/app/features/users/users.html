@@ -6,12 +6,14 @@
       <h1 class="users-title">Usuarios</h1>
       <p class="users-sub">Gestión de acceso y roles del sistema</p>
     </div>
-    <button class="btn-primary" (click)="openCreate()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <path [attr.d]="icons['plus']"/>
-      </svg>
-      Nuevo usuario
-    </button>
+    @if (isAdmin) {
+      <button class="btn-primary" (click)="openCreate()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path [attr.d]="icons['plus']"/>
+        </svg>
+        Nuevo usuario
+      </button>
+    }
   </div>
 
   <!-- ── ROLE TABS ─────────────────────────────── -->

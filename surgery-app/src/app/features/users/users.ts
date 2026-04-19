@@ -121,22 +121,32 @@ export class UsersComponent implements OnInit {
   }
 
   openCreate() {
+    if (!this.isAdmin) return;
     this.editingId.set(null);
     this.form.set(emptyUser());
     this.newPassword.set('');
+    this.showPassword.set(false);
     this.showModal.set(true);
   }
 
   openEdit(u: AppUser) {
+    if (!this.isAdmin) return;
     this.editingId.set(u.id!);
     this.form.set({ ...u });
     this.newPassword.set('');
+    this.showPassword.set(false);
     this.showModal.set(true);
   }
 
-  closeModal() { this.showModal.set(false); }
+  closeModal() {
+    this.showModal.set(false);
+    this.newPassword.set('');
+    this.showPassword.set(false);
+    this.error.set('');
+  }
 
   saveForm() {
+    if (!this.isAdmin) return;
     const f = this.form();
     if (!f.firstName || !f.lastName || !f.email || !f.role) return;
 

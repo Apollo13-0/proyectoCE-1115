@@ -20,6 +20,11 @@ interface SurgeryView {
   notes: string;
   postopNotes: string;
   operatingRoom: string;
+  preopNotes: string;
+  postopNotes: string;
+  status: ApiSurgeryStatus;
+  assistantIds?: string[];
+  documents?: File[];
 }
 
 interface SurgeryForm {
