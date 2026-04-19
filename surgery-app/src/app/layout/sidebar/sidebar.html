@@ -1,0 +1,75 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+
+  <!-- ── HEADER ──────────────────────────── -->
+  <div class="sidebar-header">
+    <div class="brand" [class.hidden]="collapsed()">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </div>
+      <span class="brand-name">SurgicalOS</span>
+    </div>
+    <button class="toggle-btn" (click)="toggle()" [attr.aria-label]="collapsed() ? 'Expandir' : 'Colapsar'">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        @if (collapsed()) {
+          <path d="M9 18l6-6-6-6"/>
+        } @else {
+          <path d="M15 18l-6-6 6-6"/>
+        }
+      </svg>
+    </button>
+  </div>
+
+  <!-- ── NAV ─────────────────────────────── -->
+  <nav class="sidebar-nav">
+    @for (group of visibleGroups(); track group.title) {
+      <div class="nav-group">
+        @if (!collapsed()) {
+          <div class="nav-group-title">{{ group.title }}</div>
+        }
+        @for (item of group.items; track item.route) {
+          <a
+            class="nav-item"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+            [title]="collapsed() ? item.label : ''">
+            <span class="nav-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path [attr.d]="icons[item.icon]"/>
+              </svg>
+            </span>
+            @if (!collapsed()) {
+              <span class="nav-label">{{ item.label }}</span>
+            }
+            @if (item.badge && !collapsed()) {
+              <span class="nav-badge">{{ item.badge }}</span>
+            }
+          </a>
+        }
+      </div>
+    }
+  </nav>
+
+  <!-- ── USER FOOTER ─────────────────────── -->
+  <div class="sidebar-footer">
+    <div class="user-card" [class.collapsed]="collapsed()">
+      <div class="user-avatar">{{ userInitials() }}</div>
+      @if (!collapsed()) {
+        <div class="user-info">
+          <div class="user-role">{{ roleLabel[userRole] }}</div>
+          <div class="user-email">{{ userEmail }}</div>
+        </div>
+      }
+    </div>
+    <button class="logout-btn" (click)="logout()" title="Cerrar sesión">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+        <path [attr.d]="icons['logout']"/>
+      </svg>
+      @if (!collapsed()) {
+        <span>Cerrar sesión</span>
+      }
+    </button>
+  </div>
+
+</aside>

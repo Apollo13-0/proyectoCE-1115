@@ -1,0 +1,286 @@
+<div class="settings-page">
+
+  <!-- ── HEADER ──────────────────────────────── -->
+  <div class="settings-header">
+    <div>
+      <h1 class="settings-title">Configuración</h1>
+      <p class="settings-sub">Parámetros generales del sistema SurgicalOS</p>
+    </div>
+    @if (saved()) {
+      <div class="save-toast">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 13l4 4L19 7"/>
+        </svg>
+        Cambios guardados
+      </div>
+    }
+  </div>
+
+  <div class="settings-layout">
+
+    <!-- ── SIDEBAR TABS ───────────────────────── -->
+    <div class="settings-nav">
+      @for (tab of tabs; track tab.key) {
+        <button
+          class="nav-tab"
+          [class.active]="activeTab() === tab.key"
+          (click)="activeTab.set($any(tab.key))">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="tab.icon"/>
+          </svg>
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    <!-- ── CONTENT ────────────────────────────── -->
+    <div class="settings-content">
+
+      <!-- GENERAL -->
+      @if (activeTab() === 'general') {
+        <div class="settings-section">
+          <h2 class="section-title">Información del hospital</h2>
+          <p class="section-sub">Datos institucionales que aparecen en los reportes y documentos</p>
+
+          <div class="form-grid">
+            <div class="form-group form-full">
+              <label class="form-label">Nombre del hospital / clínica</label>
+              <input class="form-control" type="text" [value]="hospitalName()"
+                (input)="hospitalName.set($any($event.target).value)" />
+            </div>
+            <div class="form-group form-full">
+              <label class="form-label">Dirección</label>
+              <input class="form-control" type="text" placeholder="Dirección completa"
+                [value]="hospitalAddress()"
+                (input)="hospitalAddress.set($any($event.target).value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input class="form-control" type="tel" placeholder="Ej. 2222-2222"
+                [value]="hospitalPhone()"
+                (input)="hospitalPhone.set($any($event.target).value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correo institucional</label>
+              <input class="form-control" type="email" placeholder="correo@hospital.cr"
+                [value]="hospitalEmail()"
+                (input)="hospitalEmail.set($any($event.target).value)" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Zona horaria</label>
+              <select class="form-control" [value]="timezone()"
+                (change)="timezone.set($any($event.target).value)">
+                <option value="America/Costa_Rica">América/Costa Rica (UTC-6)</option>
+                <option value="America/New_York">América/Nueva York (UTC-5)</option>
+                <option value="America/Mexico_City">América/Ciudad de México (UTC-6)</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- SECURITY -->
+      @if (activeTab() === 'security') {
+        <div class="settings-section">
+          <h2 class="section-title">Seguridad y acceso</h2>
+          <p class="section-sub">Configuración de políticas de contraseñas y sesiones</p>
+
+          <div class="settings-rows">
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Tiempo de expiración de sesión</div>
+                <div class="row-sub">Minutos de inactividad antes de cerrar sesión automáticamente</div>
+              </div>
+              <select class="form-control form-control--sm" [value]="sessionTimeout()"
+                (change)="sessionTimeout.set($any($event.target).value)">
+                <option value="15">15 minutos</option>
+                <option value="30">30 minutos</option>
+                <option value="60">60 minutos</option>
+                <option value="120">2 horas</option>
+                <option value="0">Sin expiración</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Intentos máximos de login</div>
+                <div class="row-sub">Número de intentos fallidos antes de bloquear la cuenta</div>
+              </div>
+              <select class="form-control form-control--sm" [value]="maxLoginAttempts()"
+                (change)="maxLoginAttempts.set($any($event.target).value)">
+                <option value="3">3 intentos</option>
+                <option value="5">5 intentos</option>
+                <option value="10">10 intentos</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Longitud mínima de contraseña</div>
+                <div class="row-sub">Número mínimo de caracteres requeridos</div>
+              </div>
+              <select class="form-control form-control--sm" [value]="passwordMinLength()"
+                (change)="passwordMinLength.set($any($event.target).value)">
+                <option value="8">8 caracteres</option>
+                <option value="10">10 caracteres</option>
+                <option value="12">12 caracteres</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Expiración de contraseñas</div>
+                <div class="row-sub">Días antes de que el sistema solicite cambiar la contraseña</div>
+              </div>
+              <select class="form-control form-control--sm" [value]="passwordExpireDays()"
+                (change)="passwordExpireDays.set($any($event.target).value)">
+                <option value="30">30 días</option>
+                <option value="60">60 días</option>
+                <option value="90">90 días</option>
+                <option value="180">180 días</option>
+                <option value="0">Nunca</option>
+              </select>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Autenticación de dos factores</div>
+                <div class="row-sub">Requerir verificación adicional al iniciar sesión</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [checked]="requireTwoFactor()"
+                  (change)="requireTwoFactor.set($any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+      }
+
+      <!-- NOTIFICATIONS -->
+      @if (activeTab() === 'notifications') {
+        <div class="settings-section">
+          <h2 class="section-title">Notificaciones</h2>
+          <p class="section-sub">Configura qué eventos generan notificaciones en el sistema</p>
+
+          <div class="settings-rows">
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Nueva cirugía programada</div>
+                <div class="row-sub">Notificar cuando se cree una nueva cirugía</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [checked]="notifyNewSurgery()"
+                  (change)="notifyNewSurgery.set($any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Cambio de estado de cirugía</div>
+                <div class="row-sub">Notificar cuando una cirugía cambie de estado</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [checked]="notifyStatusChange()"
+                  (change)="notifyStatusChange.set($any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Nuevo documento subido</div>
+                <div class="row-sub">Notificar cuando se suba un documento al sistema</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [checked]="notifyNewDocument()"
+                  (change)="notifyNewDocument.set($any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Nuevo usuario registrado</div>
+                <div class="row-sub">Notificar al administrador cuando se cree un usuario</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [checked]="notifyNewUser()"
+                  (change)="notifyNewUser.set($any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+
+            <div class="settings-row">
+              <div class="row-info">
+                <div class="row-label">Notificaciones por correo</div>
+                <div class="row-sub">Enviar notificaciones también al correo electrónico</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" [checked]="emailNotifications()"
+                  (change)="emailNotifications.set($any($event.target).checked)" />
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+
+          </div>
+        </div>
+      }
+
+      <!-- SYSTEM -->
+      @if (activeTab() === 'system') {
+        <div class="settings-section">
+          <h2 class="section-title">Información del sistema</h2>
+          <p class="section-sub">Detalles técnicos y académicos del proyecto</p>
+
+          <div class="info-grid">
+            <div class="info-card">
+              <div class="info-label">Versión</div>
+              <div class="info-value">{{ appVersion }}</div>
+            </div>
+            <div class="info-card">
+              <div class="info-label">Semestre</div>
+              <div class="info-value">{{ buildDate }}</div>
+            </div>
+            <div class="info-card info-full">
+              <div class="info-label">Institución</div>
+              <div class="info-value">{{ institution }}</div>
+            </div>
+            <div class="info-card info-full">
+              <div class="info-label">Curso</div>
+              <div class="info-value">{{ course }}</div>
+            </div>
+            <div class="info-card info-full">
+              <div class="info-label">Profesor</div>
+              <div class="info-value">{{ professor }}</div>
+            </div>
+          </div>
+
+          <div class="system-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p>Este sistema fue desarrollado como proyecto académico del curso CE-1115 Seguridad de la Información del ITCR. Todo el stack es open source y se implementaron los principios de mínimo privilegio, seguridad por capas y fallos seguros.</p>
+          </div>
+        </div>
+      }
+
+      <!-- Save button -->
+      @if (activeTab() !== 'system') {
+        <div class="settings-actions">
+          <button class="btn-primary" (click)="saveSettings()">
+            Guardar cambios
+          </button>
+        </div>
+      }
+
+    </div>
+  </div>
+</div>

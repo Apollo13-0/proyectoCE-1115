@@ -1,0 +1,184 @@
+<div class="cal-page">
+
+  <!-- ── PAGE HEADER ─────────────────────────── -->
+  <div class="cal-header">
+    <div class="cal-header-left">
+      <h1 class="cal-title">Calendario quirúrgico</h1>
+      <p class="cal-subtitle">Visualización de cirugías programadas por fecha</p>
+    </div>
+    <div class="cal-header-right">
+      <button class="btn-today" (click)="goToday()">Hoy</button>
+      <button class="btn-new">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Nueva cirugía
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SUMMARY STATS ───────────────────────── -->
+  <div class="cal-stats">
+    <div class="stat-pill">
+      <span class="stat-num">{{ monthlySummary().total }}</span>
+      <span class="stat-lbl">Total</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill">
+      <span class="stat-num scheduled">{{ monthlySummary().scheduled }}</span>
+      <span class="stat-lbl">Programadas</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill">
+      <span class="stat-num progress">{{ monthlySummary().inProgress }}</span>
+      <span class="stat-lbl">En curso</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill">
+      <span class="stat-num completed">{{ monthlySummary().completed }}</span>
+      <span class="stat-lbl">Completadas</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-pill">
+      <span class="stat-num cancelled">{{ monthlySummary().cancelled }}</span>
+      <span class="stat-lbl">Canceladas</span>
+    </div>
+  </div>
+
+  <!-- ── CALENDAR BODY ────────────────────────── -->
+  <div class="cal-body">
+
+    <!-- Navigation -->
+    <div class="cal-nav">
+      <button class="nav-arrow" (click)="prevMonth()" aria-label="Mes anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <h2 class="cal-month-label">{{ currentMonthLabel() }}</h2>
+      <button class="nav-arrow" (click)="nextMonth()" aria-label="Mes siguiente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="cal-grid-wrapper">
+      <!-- Week day headers -->
+      <div class="cal-grid-header">
+        @for (day of weekDays; track day) {
+          <div class="weekday-label">{{ day }}</div>
+        }
+      </div>
+
+      <!-- Days grid -->
+      <div class="cal-grid">
+        @for (day of calendarDays(); track day.date.getTime()) {
+          <div
+            class="cal-day"
+            [class.other-month]="!day.isCurrentMonth"
+            [class.today]="day.isToday"
+            [class.selected]="isSelectedDay(day)"
+            [class.has-events]="day.surgeries.length > 0"
+            (click)="selectDay(day)">
+
+            <div class="day-header">
+              <span class="day-num">{{ day.date.getDate() }}</span>
+              @if (day.surgeries.length > 0) {
+                <span class="day-count">{{ day.surgeries.length }}</span>
+              }
+            </div>
+
+            <div class="day-events">
+              @for (s of day.surgeries.slice(0, 2); track s.id) {
+                <div class="event-chip" [class]="'event-' + s.status">
+                  <span class="event-time">{{ s.time }}</span>
+                  <span class="event-title">{{ s.title }}</span>
+                </div>
+              }
+              @if (day.surgeries.length > 2) {
+                <div class="event-more">+{{ day.surgeries.length - 2 }} más</div>
+              }
+            </div>
+
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── SIDE PANEL — selected day ───────────── -->
+  @if (selectedDay()) {
+    <div class="day-panel">
+
+      <div class="panel-header">
+        <div>
+          <div class="panel-date">
+            {{ selectedDay()!.date | date:'EEEE d \'de\' MMMM':'':'es' | titlecase }}
+          </div>
+          <div class="panel-count">
+            {{ selectedDay()!.surgeries.length === 0 ? 'Sin cirugías' :
+               selectedDay()!.surgeries.length === 1 ? '1 cirugía' :
+               selectedDay()!.surgeries.length + ' cirugías' }}
+          </div>
+        </div>
+        <button class="panel-close" (click)="selectedDay.set(null)" aria-label="Cerrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      @if (selectedDay()!.surgeries.length === 0) {
+        <div class="panel-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <p>No hay cirugías programadas para este día</p>
+        </div>
+      }
+
+      <div class="panel-list">
+        @for (s of selectedDay()!.surgeries; track s.id) {
+          <div class="surgery-card" [class]="'surgery-' + s.status">
+            <div class="surgery-card-top">
+              <div class="surgery-time-badge">{{ s.time }}</div>
+              <div class="surgery-status-badge" [class]="'status-' + s.status">
+                {{ statusLabel[s.status] }}
+              </div>
+            </div>
+            <div class="surgery-title">{{ s.title }}</div>
+            <div class="surgery-meta">
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>{{ s.patient }}</span>
+              </div>
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <span>{{ s.surgeon }}</span>
+              </div>
+              <div class="meta-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>{{ s.duration }} min · {{ s.type }}</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

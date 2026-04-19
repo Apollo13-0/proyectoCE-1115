@@ -1,0 +1,346 @@
+<div class="surg-page">
+  <div class="surg-header">
+    <div>
+      <h1 class="surg-title">Cirugias</h1>
+      <p class="surg-sub">{{ scopeText }}</p>
+    </div>
+    <div class="filter-row">
+      @if (canManageSurgery) {
+        <button class="btn-primary" (click)="openCreate()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path [attr.d]="icons['plus']"/>
+          </svg>
+          Nueva cirugia
+        </button>
+      }
+      <button class="btn-secondary" (click)="loadSurgeries()" [disabled]="loading()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['refresh']"/>
+        </svg>
+        Actualizar
+      </button>
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="table-card">
+      <div class="table-toolbar">{{ error() }}</div>
+    </div>
+  }
+
+  <div class="status-tabs">
+    <button class="status-tab" [class.active]="filterStatus() === 'all'" (click)="filterStatus.set('all')">
+      Todas <span class="tab-count">{{ counts().all }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'SOLICITADA'" (click)="filterStatus.set('SOLICITADA')">
+      Solicitadas <span class="tab-count scheduled">{{ counts().requested }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'PENDIENTE_VALIDACION'" (click)="filterStatus.set('PENDIENTE_VALIDACION')">
+      En revision <span class="tab-count scheduled">{{ counts().pending }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'PROGRAMADA'" (click)="filterStatus.set('PROGRAMADA')">
+      Programadas <span class="tab-count scheduled">{{ counts().scheduled }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'EN_CURSO'" (click)="filterStatus.set('EN_CURSO')">
+      En curso <span class="tab-count progress">{{ counts().inProgress }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'COMPLETADA'" (click)="filterStatus.set('COMPLETADA')">
+      Completadas <span class="tab-count completed">{{ counts().completed }}</span>
+    </button>
+    <button class="status-tab" [class.active]="filterStatus() === 'CANCELADA'" (click)="filterStatus.set('CANCELADA')">
+      Canceladas <span class="tab-count cancelled">{{ counts().cancelled }}</span>
+    </button>
+  </div>
+
+  <div class="table-card">
+    <div class="table-toolbar">
+      <div class="search-wrap">
+        <svg class="search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['search']"/>
+        </svg>
+        <input
+          class="search-input"
+          type="text"
+          placeholder="Buscar por procedimiento, paciente, cirujano, anestesiologo o quirofano"
+          [value]="searchQuery()"
+          (input)="searchQuery.set($any($event.target).value)" />
+      </div>
+      <div class="filter-row">
+        <input class="form-control filter-date" type="date" [value]="dateFrom()" (change)="dateFrom.set($any($event.target).value)" />
+        <input class="form-control filter-date" type="date" [value]="dateTo()" (change)="dateTo.set($any($event.target).value)" />
+        <button class="btn-secondary" (click)="clearFilters()">Limpiar filtros</button>
+      </div>
+    </div>
+
+    @if (loading()) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons['refresh']"/>
+          </svg>
+        </div>
+        <p class="empty-title">Cargando cirugias</p>
+        <p class="empty-sub">Consultando la informacion autorizada para su rol</p>
+      </div>
+    }
+
+    @if (!loading() && filtered().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+            <path [attr.d]="icons['empty']"/>
+          </svg>
+        </div>
+        <p class="empty-title">
+          {{ surgeries().length === 0 ? 'Sin cirugias disponibles' : 'Sin resultados' }}
+        </p>
+        <p class="empty-sub">
+          {{ surgeries().length === 0
+            ? 'No hay cirugias visibles para su usuario.'
+            : 'Intente ajustar el estado, rango de fechas o busqueda.' }}
+        </p>
+      </div>
+    }
+
+    @if (!loading() && filtered().length > 0) {
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Procedimiento</th>
+              <th>Paciente</th>
+              <th>Cirujano</th>
+              <th>Anestesiologo</th>
+              <th>Fecha</th>
+              <th>Hora</th>
+              <th>Quirofano</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filtered(); track s.id) {
+              <tr>
+                <td class="td-main">
+                  <div class="td-title">{{ s.title }}</div>
+                  <div class="td-type">{{ s.duration }} min</div>
+                </td>
+                <td>{{ s.patient }}</td>
+                <td>{{ s.surgeon }}</td>
+                <td>{{ s.anesthesiologist }}</td>
+                <td>{{ s.dateLabel }}</td>
+                <td>{{ s.time }}</td>
+                <td>{{ s.operatingRoom }}</td>
+                <td>
+                  @if (canChangeStatus) {
+                    <select
+                      class="status-select"
+                      [value]="s.status"
+                      [disabled]="updatingId() === s.id"
+                      (change)="updateStatus(s, $any($event.target).value)">
+                      @for (opt of statusOptions; track opt.value) {
+                        <option [value]="opt.value">{{ opt.label }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <span class="badge" [ngClass]="'badge-' + statusClass[s.status]">
+                      {{ statusLabel[s.status] }}
+                    </span>
+                  }
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="action-btn" (click)="openDetail(s)" title="Ver detalle">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path [attr.d]="icons['eye']"/>
+                      </svg>
+                    </button>
+                    @if (canManageSurgery) {
+                      <button class="action-btn" (click)="openEdit(s)" title="Editar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path [attr.d]="icons['edit']"/>
+                        </svg>
+                      </button>
+                    }
+                    @if (canDeleteSurgery) {
+                      <button class="action-btn action-btn--danger" (click)="confirmDelete(s.id)" title="Eliminar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path [attr.d]="icons['trash']"/>
+                        </svg>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+@if (showFormModal()) {
+  <div class="modal-backdrop" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ form().id ? 'Editar cirugia' : 'Nueva cirugia' }}</h3>
+          <p class="modal-sub">Use IDs reales de paciente, cirujano y anestesiologo.</p>
+        </div>
+        <button class="modal-close" (click)="closeForm()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Paciente ID <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().patientId" (input)="updateForm('patientId', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cirujano ID <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().leadSurgeonId" (input)="updateForm('leadSurgeonId', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Anestesiologo ID <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().anesthesiologistId" (input)="updateForm('anesthesiologistId', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo de cirugia <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().surgeryType" (input)="updateForm('surgeryType', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha <span class="req">*</span></label>
+            <input class="form-control" type="date" [value]="form().date" (change)="updateForm('date', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Inicio <span class="req">*</span></label>
+            <input class="form-control" type="time" [value]="form().startTime" (change)="updateForm('startTime', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fin <span class="req">*</span></label>
+            <input class="form-control" type="time" [value]="form().endTime" (change)="updateForm('endTime', $any($event.target).value)" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Quirofano</label>
+            <input class="form-control" type="text" [value]="form().operatingRoom" (input)="updateForm('operatingRoom', $any($event.target).value)" />
+          </div>
+          @if (form().id) {
+            <div class="form-group">
+              <label class="form-label">Estado</label>
+              <select class="form-control" [value]="form().status" (change)="updateForm('status', $any($event.target).value)">
+                @for (opt of statusOptions; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+            </div>
+          }
+          <div class="form-group form-full">
+            <label class="form-label">Notas preoperatorias</label>
+            <textarea class="form-control form-textarea" [value]="form().preopNotes" (input)="updateForm('preopNotes', $any($event.target).value)"></textarea>
+          </div>
+          <div class="form-group form-full">
+            <label class="form-label">Notas postoperatorias</label>
+            <textarea class="form-control form-textarea" [value]="form().postopNotes" (input)="updateForm('postopNotes', $any($event.target).value)"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeForm()">Cancelar</button>
+        <button class="btn-primary" (click)="saveForm()" [disabled]="!isFormValid()">
+          {{ form().id ? 'Guardar cambios' : 'Crear cirugia' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteModal()) {
+  <div class="modal-backdrop" (click)="cancelDelete()">
+    <div class="modal modal-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Eliminar cirugia</h3>
+        <button class="modal-close" (click)="cancelDelete()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="delete-msg">Esta accion solo esta permitida para administradores.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="cancelDelete()">Cancelar</button>
+        <button class="btn-danger" (click)="doDelete()">Eliminar</button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (selectedSurgery(); as surgery) {
+  <div class="modal-backdrop" (click)="closeDetail()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">{{ surgery.title }}</h3>
+          <p class="modal-sub">{{ surgery.dateLabel }} - {{ surgery.time }} a {{ surgery.endTime }}</p>
+        </div>
+        <button class="modal-close" (click)="closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path [attr.d]="icons['close']"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="detail-grid">
+          <div>
+            <div class="detail-label">Paciente</div>
+            <div class="detail-value">{{ surgery.patient }}</div>
+          </div>
+          <div>
+            <div class="detail-label">Cirujano</div>
+            <div class="detail-value">{{ surgery.surgeon }}</div>
+          </div>
+          <div>
+            <div class="detail-label">Anestesiologo</div>
+            <div class="detail-value">{{ surgery.anesthesiologist }}</div>
+          </div>
+          <div>
+            <div class="detail-label">Asistentes</div>
+            <div class="detail-value">{{ surgery.assistants }}</div>
+          </div>
+          <div>
+            <div class="detail-label">Quirofano</div>
+            <div class="detail-value">{{ surgery.operatingRoom }}</div>
+          </div>
+          <div>
+            <div class="detail-label">Estado</div>
+            <div class="detail-value">
+              <span class="badge" [ngClass]="'badge-' + statusClass[surgery.status]">
+                {{ statusLabel[surgery.status] }}
+              </span>
+            </div>
+          </div>
+          <div class="detail-full">
+            <div class="detail-label">Notas preoperatorias</div>
+            <div class="detail-value">{{ surgery.notes || 'Sin notas registradas' }}</div>
+          </div>
+          <div class="detail-full">
+            <div class="detail-label">Notas postoperatorias</div>
+            <div class="detail-value">{{ surgery.postopNotes || 'Sin notas registradas' }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeDetail()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}
