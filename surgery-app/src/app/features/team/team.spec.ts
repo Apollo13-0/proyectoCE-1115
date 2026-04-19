@@ -1,18 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
 
-import { Team } from './team';
+import { TeamComponent } from './team';
 
 describe('Team', () => {
-  let component: Team;
-  let fixture: ComponentFixture<Team>;
+  let component: TeamComponent;
+  let fixture: ComponentFixture<TeamComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Team]
+      imports: [TeamComponent],
+      providers: [provideHttpClient()]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Team);
+    fixture = TestBed.createComponent(TeamComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

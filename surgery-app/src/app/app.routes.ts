@@ -35,10 +35,12 @@ export const routes: Routes = [
       },
       {
         path: 'surgeries',
+        canActivate: [roleGuard(['admin', 'surgeon', 'anesthesiologist', 'patient', 'assistant'])],
         loadComponent: () => import('./features/surgeries/surgeries').then(m => m.SurgeriesComponent)
       },
       {
         path: 'patients',
+        canActivate: [roleGuard(['admin', 'surgeon'])],
         loadComponent: () => import('./features/patients/patients').then(m => m.PatientsComponent)
       },
       {

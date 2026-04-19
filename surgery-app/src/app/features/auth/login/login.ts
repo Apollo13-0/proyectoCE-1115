@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../core/auth.service';
 
 type Role = 'admin' | 'surgeon' | 'anesthesiologist' | 'patient';
 
@@ -30,20 +31,20 @@ export class LoginComponent {
   cookieAccepted = signal(!!localStorage.getItem('cookies_accepted'));
 
   demoUsers: DemoUser[] = [
-    { label: 'Administrador', email: 'admin@surgical.cr',         password: 'Admin1234!',   role: 'admin',            icon: '⚙️' },
-    { label: 'Cirujano',      email: 'cirujano@surgical.cr',      password: 'Surgeon1234!', role: 'surgeon',          icon: '🔪' },
-    { label: 'Anestesiólogo', email: 'anestesiologo@surgical.cr', password: 'Anest1234!',   role: 'anesthesiologist', icon: '💉' },
-    { label: 'Paciente',      email: 'paciente@surgical.cr',      password: 'Patient1234!', role: 'patient',          icon: '🏥' },
+    { label: 'Administrador', email: 'admin@hospital.local',         password: 'Admin2026!',   role: 'admin',            icon: '⚙️' },
+    { label: 'Cirujano',      email: 'laura.solis@hospital.local',      password: 'LauraSolis2026!', role: 'surgeon',          icon: '🔪' },
+    { label: 'Anestesiólogo', email: 'diego.mora@hospital.local', password: 'DiegoMora2026!',   role: 'anesthesiologist', icon: '💉' },
+    { label: 'Paciente',      email: 'carlos.rojas@correo.com',      password: 'CarlosRojas2026!', role: 'patient',          icon: '🏥' },
   ];
 
   private credentials: Record<string, { password: string; role: Role }> = {
-    'admin@surgical.cr':         { password: 'Admin1234!',   role: 'admin' },
-    'cirujano@surgical.cr':      { password: 'Surgeon1234!', role: 'surgeon' },
-    'anestesiologo@surgical.cr': { password: 'Anest1234!',   role: 'anesthesiologist' },
-    'paciente@surgical.cr':      { password: 'Patient1234!', role: 'patient' },
+    'admin@hospital.local':         { password: 'Admin2026!',   role: 'admin' },
+    'laura.solis@hospital.local':      { password: 'LauraSolis2026!', role: 'surgeon' },
+    'diego.mora@hospital.local': { password: 'DiegoMora2026!',   role: 'anesthesiologist' },
+    'carlos.rojas@correo.com':      { password: 'CarlosRojas2026!', role: 'patient' },
   };
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   acceptCookies(): void {
     localStorage.setItem('cookies_accepted', 'true');
@@ -69,19 +70,17 @@ export class LoginComponent {
     }
 
     this.loading.set(true);
-    await new Promise(r => setTimeout(r, 900));
 
-    const match = this.credentials[this.email.toLowerCase().trim()];
-
-    if (!match || match.password !== this.password) {
-      this.error.set('Correo o contraseña incorrectos.');
-      this.loading.set(false);
-      return;
-    }
-
-    localStorage.setItem('user_role',  match.role);
-    localStorage.setItem('user_email', this.email);
-    this.loading.set(false);
-    this.router.navigate(['/dashboard']);
+    this.authService.login(this.email, this.password).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.error.set('Correo o contraseña incorrectos.');
+        console.error('Login error:', err);
+      }
+    });
   }
 }

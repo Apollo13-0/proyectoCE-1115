@@ -14,6 +14,10 @@
     </button>
   </div>
 
+  @if (error()) {
+    <div class="team-toolbar">{{ error() }}</div>
+  }
+
   <!-- ── ROLE TABS ─────────────────────────────── -->
   <div class="role-tabs">
     <button class="role-tab" [class.active]="filterRole() === 'all'" (click)="filterRole.set('all')">
@@ -21,7 +25,7 @@
     </button>
     @for (r of roleOptions; track r.value) {
       <button class="role-tab" [class.active]="filterRole() === r.value" (click)="filterRole.set(r.value)">
-        {{ r.plural }} <span class="tab-count" [class]="r.value">{{ counts()[r.value] }}</span>
+        {{ r.plural }} <span class="tab-count" [ngClass]="r.value">{{ counts()[r.value] }}</span>
       </button>
     }
   </div>
@@ -42,7 +46,18 @@
   </div>
 
   <!-- Empty state -->
-  @if (filtered().length === 0) {
+  @if (loading()) {
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+          <path [attr.d]="icons['empty']"/>
+        </svg>
+      </div>
+      <p class="empty-title">Cargando equipo medico</p>
+    </div>
+  }
+
+  @if (!loading() && filtered().length === 0) {
     <div class="empty-state">
       <div class="empty-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
@@ -69,12 +84,12 @@
   }
 
   <!-- Member cards -->
-  @if (filtered().length > 0) {
+  @if (!loading() && filtered().length > 0) {
     <div class="cards-grid">
       @for (m of filtered(); track m.id) {
-        <div class="member-card" [class]="'card-' + m.role">
+        <div class="member-card" [ngClass]="'card-' + m.role">
           <div class="card-top">
-            <div class="member-avatar" [class]="'avatar-' + m.role">
+            <div class="member-avatar" [ngClass]="'avatar-' + m.role">
               {{ initials(m) }}
             </div>
             <div class="card-actions">
@@ -93,7 +108,7 @@
 
           <div class="member-info">
             <div class="member-name">{{ fullName(m) }}</div>
-            <div class="member-role-badge" [class]="'role-' + m.role">
+            <div class="member-role-badge" [ngClass]="'role-' + m.role">
               {{ roleLabel[m.role] }}
             </div>
             @if (m.specialty) {
@@ -123,7 +138,7 @@
           </div>
 
           <div class="card-footer">
-            <span class="status-badge" [class]="'status-' + m.status">
+            <span class="status-badge" [ngClass]="'status-' + m.status">
               {{ statusLabel[m.status] }}
             </span>
           </div>
@@ -174,6 +189,7 @@
             <label class="form-label">Rol <span class="req">*</span></label>
             <select class="form-control"
               [value]="form().role"
+              [disabled]="editingId() !== null"
               (change)="updateForm('role', $any($event.target).value)">
               @for (r of roleOptions; track r.value) {
                 <option [value]="r.value">{{ r.label }}</option>
@@ -208,10 +224,22 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">Correo electrónico</label>
+            <label class="form-label">Correo electrónico <span class="req">*</span></label>
             <input class="form-control" type="email" placeholder="correo@ejemplo.com"
               [value]="form().email"
               (input)="updateForm('email', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              Contraseña
+              @if (editingId() === null) {
+                <span class="req">*</span>
+              }
+            </label>
+            <input class="form-control" type="password" placeholder="Contraseña temporal"
+              [value]="form().password"
+              (input)="updateForm('password', $any($event.target).value)" />
           </div>
 
           <div class="form-group">

@@ -26,12 +26,13 @@ export class SidebarComponent {
 
   collapsed = signal(false);
 
-  userRole  = localStorage.getItem('user_role')  ?? 'admin';
-  userEmail = localStorage.getItem('user_email') ?? 'admin@surgical.cr';
+  userRole  = localStorage.getItem('user_role')  ?? 'patient';
+  userEmail = localStorage.getItem('user_email') ?? '';
 
   userInitials = computed(() => {
+    if (!this.userEmail) return 'US';
     const parts = this.userEmail.split('@')[0].split('.');
-    return parts.map(p => p[0].toUpperCase()).join('').slice(0, 2);
+    return parts.map(p => p[0]?.toUpperCase() ?? '').join('').slice(0, 2);
   });
 
   roleLabel: Record<string, string> = {
@@ -39,6 +40,7 @@ export class SidebarComponent {
     surgeon:          'Cirujano',
     anesthesiologist: 'Anestesiólogo',
     patient:          'Paciente',
+    assistant:         'Asistente',
   };
 
   // SVG paths for each icon (24x24 viewBox)
@@ -58,17 +60,17 @@ export class SidebarComponent {
     {
       title: 'Principal',
       items: [
-        { label: 'Dashboard',     icon: 'dashboard',  route: '/dashboard',  roles: ['admin','surgeon','anesthesiologist','patient'] },
-        { label: 'Calendario',    icon: 'calendar',   route: '/calendar',   roles: ['admin','surgeon','anesthesiologist','patient'] },
+        { label: 'Dashboard',     icon: 'dashboard',  route: '/dashboard',  roles: ['admin','surgeon','anesthesiologist','patient','assistant'] },
+        { label: 'Calendario',    icon: 'calendar',   route: '/calendar',   roles: ['admin','surgeon','anesthesiologist','patient','assistant'] },
       ]
     },
     {
       title: 'Gestión',
       items: [
-        { label: 'Cirugías',      icon: 'surgeries',  route: '/surgeries',  roles: ['admin','surgeon','anesthesiologist'] },
+        { label: 'Cirugías',      icon: 'surgeries',  route: '/surgeries',  roles: ['admin','surgeon','anesthesiologist','patient','assistant'] },
         { label: 'Pacientes',     icon: 'patients',   route: '/patients',   roles: ['admin','surgeon'] },
         { label: 'Equipo médico', icon: 'team',       route: '/team',       roles: ['admin'] },
-        { label: 'Documentos',    icon: 'documents',  route: '/documents',  roles: ['admin','surgeon','anesthesiologist','patient'] },
+        { label: 'Documentos',    icon: 'documents',  route: '/documents',  roles: ['admin','surgeon','anesthesiologist','patient','assistant'] },
       ]
     },
     {

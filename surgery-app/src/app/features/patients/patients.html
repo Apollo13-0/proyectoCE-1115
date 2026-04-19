@@ -27,6 +27,10 @@
     </button>
   </div>
 
+  @if (error()) {
+    <div class="error-banner">{{ error() }}</div>
+  }
+
   <!-- ── TABLE CARD ───────────────────────────── -->
   <div class="table-card">
 
@@ -128,11 +132,13 @@
                         <path [attr.d]="icons['edit']"/>
                       </svg>
                     </button>
-                    <button class="action-btn action-btn--danger" (click)="confirmDelete(p.id!)" title="Eliminar">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path [attr.d]="icons['trash']"/>
-                      </svg>
-                    </button>
+                    @if (canDeletePatient) {
+                      <button class="action-btn action-btn--danger" (click)="confirmDelete(p.id!)" title="Eliminar">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path [attr.d]="icons['trash']"/>
+                        </svg>
+                      </button>
+                    }
                   </div>
                 </td>
               </tr>

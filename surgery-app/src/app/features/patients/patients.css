@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-
 :host {
   --navy:      #2F4156;
   --teal:      #567C8D;
@@ -45,6 +43,16 @@
 }
 
 .pat-sub { font-size: 0.9rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+.error-banner {
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: var(--r-sm);
+  background: rgba(220, 38, 38, 0.08);
+  color: #b91c1c;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
 
 /* ── BUTTONS ────────────────────────────────── */
 .btn-primary {

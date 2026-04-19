@@ -62,23 +62,6 @@
       </div>
 
       <!-- Demo role pills -->
-      <div class="demo-section">
-        <div class="demo-label">Acceso rápido</div>
-        <div class="demo-pills">
-          @for (u of demoUsers; track u.email) {
-            <button
-              class="demo-pill"
-              (click)="fillDemo(u)"
-              [class.active]="email === u.email"
-              type="button">
-              <span class="demo-pill-icon">{{ u.icon }}</span>
-              <span>{{ u.label }}</span>
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="divider">o ingrese manualmente</div>
 
       <!-- Error -->
       @if (error()) {
