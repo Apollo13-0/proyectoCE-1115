@@ -2,7 +2,6 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiAppUser, ApiUserRole, AppUserPayload, UsersService } from '../../core/users.service';
-import { AuthService } from '../../core/auth.service';
 
 export type UserRole = 'admin' | 'surgeon' | 'anesthesiologist' | 'patient' | 'assistant';
 
@@ -42,8 +41,6 @@ export class UsersComponent implements OnInit {
   showPassword    = signal(false);
   loading         = signal(false);
   error           = signal('');
-  userRole        = '';
-  isAdmin         = false;
 
   roleOptions: { value: UserRole; label: string }[] = [
     { value: 'admin',            label: 'Administrador'  },
@@ -72,19 +69,9 @@ export class UsersComponent implements OnInit {
     eyeOff: 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21',
   };
 
-  constructor(
-    private usersService: UsersService,
-    private authService: AuthService
-  ) {
-    this.userRole = this.authService.getRole();
-    this.isAdmin = this.userRole === 'admin';
-  }
+  constructor(private usersService: UsersService) {}
 
   ngOnInit(): void {
-    if (!this.isAdmin) {
-      this.error.set('Solo administradores pueden acceder a esta sección.');
-      return;
-    }
     this.loadUsers();
   }
 
@@ -126,11 +113,8 @@ export class UsersComponent implements OnInit {
         this.users.set(response.items.map(user => this.mapUser(user)));
         this.loading.set(false);
       },
-      error: (err) => {
-        const errorMsg = err.status === 403
-          ? 'No tienes permiso para ver los usuarios.'
-          : 'No se pudieron cargar los usuarios.';
-        this.error.set(errorMsg);
+      error: () => {
+        this.error.set('No se pudieron cargar los usuarios.');
         this.loading.set(false);
       }
     });
@@ -167,53 +151,30 @@ export class UsersComponent implements OnInit {
     if (!f.firstName || !f.lastName || !f.email || !f.role) return;
 
     const payload = this.toPayload(f);
-    const isNew = this.editingId() === null;
-    
-    if (isNew && !this.newPassword()) {
-      this.error.set('La contraseña es requerida para nuevos usuarios.');
-      return;
-    }
-    
     if (this.newPassword()) {
-      if (this.newPassword().length < 8) {
-        this.error.set('La contraseña debe tener al menos 8 caracteres.');
-        return;
-      }
       payload.password = this.newPassword();
     }
 
-    this.loading.set(true);
-    const request = isNew
-      ? this.usersService.create(payload)
-      : this.usersService.update(this.editingId()!, payload);
+    const request = this.editingId()
+      ? this.usersService.update(this.editingId()!, payload)
+      : this.usersService.create(payload);
 
     this.error.set('');
     request.subscribe({
       next: () => {
-        this.loading.set(false);
         this.closeModal();
         this.loadUsers();
       },
-      error: (err) => {
-        this.loading.set(false);
-        const errorMsg = err.status === 403
-          ? 'No tienes permiso para guardar usuarios.'
-          : err.status === 409
-          ? 'Este correo ya está registrado.'
-          : 'No se pudo guardar el usuario.';
-        this.error.set(errorMsg);
-      }
+      error: () => this.error.set('No se pudo guardar el usuario.')
     });
   }
 
   confirmDelete(id: string) {
-    if (!this.isAdmin) return;
     this.deletingId.set(id);
     this.showDeleteModal.set(true);
   }
 
   doDelete() {
-    if (!this.isAdmin) return;
     const id = this.deletingId();
     if (!id) return;
     this.usersService.delete(id).subscribe({
@@ -222,12 +183,7 @@ export class UsersComponent implements OnInit {
         this.deletingId.set(null);
         this.loadUsers();
       },
-      error: (err) => {
-        const errorMsg = err.status === 403 
-          ? 'No tienes permiso para eliminar usuarios.'
-          : 'No se pudo eliminar el usuario.';
-        this.error.set(errorMsg);
-      }
+      error: () => this.error.set('No se pudo eliminar el usuario.')
     });
   }
 

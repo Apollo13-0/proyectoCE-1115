@@ -10,16 +10,6 @@ from ..permissions import require_role
 
 router = APIRouter(prefix="/patients", tags=["patients"])
 
-@router.get("/dropdown", response_model=list)
-def list_patients_dropdown(
-    db: Session = Depends(get_db),
-    current_user: Any = Depends(get_current_user)
-):
-    """Get all patients for dropdown (id, name)"""
-    from ..models import Patient
-    patients = db.query(Patient.id, Patient.first_name, Patient.last_name).all()
-    return [{"id": str(p[0]), "name": f"{p[1]} {p[2]}"} for p in patients]
-
 @router.get("/", response_model=PaginatedResponse)
 def list_patients(
     db: Session = Depends(get_db),

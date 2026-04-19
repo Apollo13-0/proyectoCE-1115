@@ -48,62 +48,18 @@ export interface SurgeryPayload {
   postop_notes?: string | null;
 }
 
-export interface SurgeryDocument {
-  id: string;
-  file_name: string;
-  document_type: string;
-  file_size_bytes: number;
-  uploaded_at: string;
-  notes?: string;
-}
-
-export interface DropdownOption {
-  id: string;
-  name: string;
-}
-
 @Injectable({
   providedIn: 'root'
 })
 export class SurgeriesService {
   constructor(private http: HttpClient) {}
 
-  // Dropdown lists
-  getPatients(): Observable<DropdownOption[]> {
-    return this.http.get<DropdownOption[]>('/api/patients/dropdown');
-  }
-
-  getSurgeons(): Observable<DropdownOption[]> {
-    return this.http.get<DropdownOption[]>('/api/users/surgeons/dropdown');
-  }
-
-  getAnesthesiologists(): Observable<DropdownOption[]> {
-    return this.http.get<DropdownOption[]>('/api/users/anesthesiologists/dropdown');
-  }
-
-  getAssistants(): Observable<DropdownOption[]> {
-    return this.http.get<DropdownOption[]>('/api/users/assistants/dropdown');
-  }
-
-  getSurgeryTypes(): Observable<DropdownOption[]> {
-    return this.http.get<DropdownOption[]>('/api/surgeries/types');
-  }
-
-  // Surgery operations
   list(page = 1, size = 100): Observable<PaginatedSurgeries> {
     const params = new HttpParams()
       .set('page', page)
       .set('size', size);
 
     return this.http.get<PaginatedSurgeries>('/api/surgeries/', { params });
-  }
-
-  getCalendarData(month: number, year: number): Observable<ApiSurgery[]> {
-    const params = new HttpParams()
-      .set('month', month)
-      .set('year', year);
-
-    return this.http.get<ApiSurgery[]>('/api/surgeries/calendar', { params });
   }
 
   getById(id: string): Observable<ApiSurgery> {
@@ -124,39 +80,5 @@ export class SurgeriesService {
 
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`/api/surgeries/${id}`);
-  }
-
-  uploadDocuments(surgeryId: string, files: File[]): Observable<any[]> {
-    return new Observable(observer => {
-      const uploadPromises = files.map(file => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('surgery_id', surgeryId);
-        formData.append('document_type', 'DOCUMENTO_CIRUGIA');
-        return this.http.post<any>('/api/documents/upload', formData).toPromise();
-      });
-
-      Promise.all(uploadPromises)
-        .then(results => {
-          observer.next(results);
-          observer.complete();
-        })
-        .catch(error => observer.error(error));
-    });
-  }
-
-  assignAssistants(surgeryId: string, assistantIds: string[]): Observable<any> {
-    return this.http.post(`/api/surgeries/${surgeryId}/assistants`, { assistant_ids: assistantIds });
-  }
-
-  getSurgeryDocuments(surgeryId: string): Observable<SurgeryDocument[]> {
-    return this.http.get<SurgeryDocument[]>(`/api/surgeries/${surgeryId}/documents`);
-  }
-
-  downloadDocument(docId: string, fileName: string): void {
-    const link = document.createElement('a');
-    link.href = `/api/documents/${docId}/download`;
-    link.download = fileName;
-    link.click();
   }
 }

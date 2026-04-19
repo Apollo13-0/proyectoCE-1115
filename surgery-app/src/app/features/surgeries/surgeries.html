@@ -186,7 +186,7 @@
       <div class="modal-header">
         <div>
           <h3 class="modal-title">{{ form().id ? 'Editar cirugia' : 'Nueva cirugia' }}</h3>
-          <p class="modal-sub">{{ form().id ? 'Actualizar informacion de la cirugia' : 'Crear una nueva cirugia programada' }}</p>
+          <p class="modal-sub">Use IDs reales de paciente, cirujano y anestesiologo.</p>
         </div>
         <button class="modal-close" (click)="closeForm()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -198,40 +198,20 @@
       <div class="modal-body">
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Paciente <span class="req">*</span></label>
-            <select class="form-control" [value]="form().patientId" (change)="updateForm('patientId', $any($event.target).value)">
-              <option value="">-- Seleccionar paciente --</option>
-              @for (p of patients(); track p.id) {
-                <option [value]="p.id">{{ p.name }}</option>
-              }
-            </select>
+            <label class="form-label">Paciente ID <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().patientId" (input)="updateForm('patientId', $any($event.target).value)" />
           </div>
           <div class="form-group">
-            <label class="form-label">Cirujano <span class="req">*</span></label>
-            <select class="form-control" [value]="form().leadSurgeonId" (change)="updateForm('leadSurgeonId', $any($event.target).value)">
-              <option value="">-- Seleccionar cirujano --</option>
-              @for (s of surgeons(); track s.id) {
-                <option [value]="s.id">{{ s.name }}</option>
-              }
-            </select>
+            <label class="form-label">Cirujano ID <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().leadSurgeonId" (input)="updateForm('leadSurgeonId', $any($event.target).value)" />
           </div>
           <div class="form-group">
-            <label class="form-label">Anestesiologo <span class="req">*</span></label>
-            <select class="form-control" [value]="form().anesthesiologistId" (change)="updateForm('anesthesiologistId', $any($event.target).value)">
-              <option value="">-- Seleccionar anestesiologo --</option>
-              @for (a of anesthesiologists(); track a.id) {
-                <option [value]="a.id">{{ a.name }}</option>
-              }
-            </select>
+            <label class="form-label">Anestesiologo ID <span class="req">*</span></label>
+            <input class="form-control" type="text" [value]="form().anesthesiologistId" (input)="updateForm('anesthesiologistId', $any($event.target).value)" />
           </div>
           <div class="form-group">
             <label class="form-label">Tipo de cirugia <span class="req">*</span></label>
-            <select class="form-control" [value]="form().surgeryType" (change)="updateForm('surgeryType', $any($event.target).value)">
-              <option value="">-- Seleccionar tipo --</option>
-              @for (t of surgeryTypes(); track t.id) {
-                <option [value]="t.id">{{ t.name }}</option>
-              }
-            </select>
+            <input class="form-control" type="text" [value]="form().surgeryType" (input)="updateForm('surgeryType', $any($event.target).value)" />
           </div>
           <div class="form-group">
             <label class="form-label">Fecha <span class="req">*</span></label>
@@ -249,20 +229,6 @@
             <label class="form-label">Quirofano</label>
             <input class="form-control" type="text" [value]="form().operatingRoom" (input)="updateForm('operatingRoom', $any($event.target).value)" />
           </div>
-          <div class="form-group form-full">
-            <label class="form-label">Asistentes</label>
-            <div class="assistants-grid">
-              @for (a of assistants(); track a.id) {
-                <label class="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    [checked]="selectedAssistantIds().has(a.id)"
-                    (change)="toggleAssistant(a.id)" />
-                  <span>{{ a.name }}</span>
-                </label>
-              }
-            </div>
-          </div>
           @if (form().id) {
             <div class="form-group">
               <label class="form-label">Estado</label>
@@ -273,44 +239,6 @@
               </select>
             </div>
           }
-          <div class="form-group form-full">
-            <label class="form-label">Documentos (PDF)</label>
-            <div class="file-upload-area">
-              <input 
-                type="file" 
-                accept=".pdf"
-                multiple
-                (change)="onDocumentSelected($event)"
-                #fileInput
-                style="display: none;" />
-              <button type="button" class="btn-secondary" (click)="fileInput.click()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                  <polyline points="17 8 12 3 7 8"/>
-                  <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                Subir PDFs
-              </button>
-              <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">Seguros, notas médicas, exámenes, etc.</p>
-            </div>
-            @if (uploadedDocuments().length > 0) {
-              <div class="uploaded-files" style="margin-top: 1rem;">
-                <p style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Documentos seleccionados:</p>
-                <div class="file-list">
-                  @for (doc of uploadedDocuments(); track doc.name; let i = $index) {
-                    <div class="file-item">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width: 14px; height: 14px;">
-                        <path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/>
-                        <polyline points="13 2 13 9 20 9"/>
-                      </svg>
-                      <span>{{ doc.name }}</span>
-                      <button type="button" (click)="removeDocument(i)" class="remove-btn">×</button>
-                    </div>
-                  }
-                </div>
-              </div>
-            }
-          </div>
           <div class="form-group form-full">
             <label class="form-label">Notas preoperatorias</label>
             <textarea class="form-control form-textarea" [value]="form().preopNotes" (input)="updateForm('preopNotes', $any($event.target).value)"></textarea>

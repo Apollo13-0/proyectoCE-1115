@@ -16,43 +16,6 @@ def user_payload(user: UserCreate, role: UserRole):
     data["password_hash"] = get_password_hash(user.password)
     return data
 
-@router.get("/surgeons/dropdown", response_model=list)
-def list_surgeons_dropdown(
-    db: Session = Depends(get_db),
-    current_user: Any = Depends(get_current_user)
-):
-    """Get all active surgeons for dropdown (id, name)"""
-    from ..services import serialize_user
-    surgeons = db.query(AppUser).filter(
-        AppUser.role == UserRole.CIRUJANO,
-        AppUser.is_active == True
-    ).all()
-    return [{"id": str(s.id), "name": f"{s.first_name} {s.last_name}"} for s in surgeons]
-
-@router.get("/anesthesiologists/dropdown", response_model=list)
-def list_anesthesiologists_dropdown(
-    db: Session = Depends(get_db),
-    current_user: Any = Depends(get_current_user)
-):
-    """Get all active anesthesiologists for dropdown (id, name)"""
-    anesthesiologists = db.query(AppUser).filter(
-        AppUser.role == UserRole.ANESTESIOLOGO,
-        AppUser.is_active == True
-    ).all()
-    return [{"id": str(a.id), "name": f"{a.first_name} {a.last_name}"} for a in anesthesiologists]
-
-@router.get("/assistants/dropdown", response_model=list)
-def list_assistants_dropdown(
-    db: Session = Depends(get_db),
-    current_user: Any = Depends(get_current_user)
-):
-    """Get all active assistants for dropdown (id, name)"""
-    assistants = db.query(AppUser).filter(
-        AppUser.role == UserRole.ASISTENTE,
-        AppUser.is_active == True
-    ).all()
-    return [{"id": str(a.id), "name": f"{a.first_name} {a.last_name}"} for a in assistants]
-
 @router.get("/surgeons", response_model=PaginatedResponse)
 def list_surgeons(
     db: Session = Depends(get_db),

@@ -1,12 +1,11 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, or_, extract
+from sqlalchemy import and_, or_
 from .models import Surgery, MedicalDocument, AppUser, Patient, SurgeryAssistant, UserRole
 from .schemas import SurgeryCreate, SurgeryUpdate, DocumentCreate, PatientCreate, PatientUpdate
 from typing import List, Optional
 import uuid
 import os
 import hashlib
-from datetime import datetime, date
 
 UPLOAD_DIR = "/app/uploads"
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
@@ -82,41 +81,6 @@ def get_surgeries(db: Session, current_user: AppUser, filters: dict = {}, page: 
     items = [serialize_surgery(db, surgery) for surgery in surgeries]
     
     return {"items": items, "total": total, "page": page, "size": size}
-
-def get_surgeries_for_calendar(db: Session, current_user: AppUser, month: int, year: int) -> List[Surgery]:
-    """Get surgeries for a specific month and year for calendar view"""
-    query = db.query(Surgery).join(Patient).join(AppUser, Surgery.lead_surgeon_id == AppUser.id)
-    
-    # Filter by month and year
-    query = query.filter(
-        and_(
-            extract('month', Surgery.scheduled_start) == month,
-            extract('year', Surgery.scheduled_start) == year
-        )
-    )
-    
-    # Apply role-based visibility
-    if current_user.role != UserRole.ADMIN:
-        conditions = []
-        if current_user.role == UserRole.CIRUJANO:
-            conditions.append(Surgery.lead_surgeon_id == current_user.id)
-        elif current_user.role == UserRole.ANESTESIOLOGO:
-            conditions.append(Surgery.anesthesiologist_id == current_user.id)
-        elif current_user.role == UserRole.PACIENTE and current_user.patient:
-            conditions.append(Surgery.patient_id == current_user.patient.id)
-        elif current_user.role == UserRole.ASISTENTE:
-            conditions.append(Surgery.id.in_(
-                db.query(SurgeryAssistant.surgery_id).filter(SurgeryAssistant.assistant_user_id == current_user.id)
-            ))
-        if conditions:
-            query = query.filter(or_(*conditions))
-        else:
-            return []
-    
-    # Order by scheduled start time
-    query = query.order_by(Surgery.scheduled_start)
-    
-    return query.all()
 
 def get_surgery(db: Session, surgery_id: uuid.UUID):
     return db.query(Surgery).filter(Surgery.id == surgery_id).first()

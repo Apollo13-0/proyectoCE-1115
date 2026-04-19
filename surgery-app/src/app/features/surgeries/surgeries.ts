@@ -2,8 +2,7 @@ import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
-import { ApiSurgery, ApiSurgeryStatus, SurgeryPayload, SurgeriesService, DropdownOption } from '../../core/surgeries.service';
-import { DocumentsService } from '../../core/documents.service';
+import { ApiSurgery, ApiSurgeryStatus, SurgeryPayload, SurgeriesService } from '../../core/surgeries.service';
 
 interface SurgeryView {
   id: string;
@@ -21,6 +20,11 @@ interface SurgeryView {
   notes: string;
   postopNotes: string;
   operatingRoom: string;
+  preopNotes: string;
+  postopNotes: string;
+  status: ApiSurgeryStatus;
+  assistantIds?: string[];
+  documents?: File[];
 }
 
 interface SurgeryForm {
@@ -36,8 +40,6 @@ interface SurgeryForm {
   preopNotes: string;
   postopNotes: string;
   status: ApiSurgeryStatus;
-  assistantIds?: string[];
-  documents?: File[];
 }
 
 const emptyForm = (): SurgeryForm => ({
@@ -52,8 +54,6 @@ const emptyForm = (): SurgeryForm => ({
   preopNotes: '',
   postopNotes: '',
   status: 'PROGRAMADA',
-  assistantIds: [],
-  documents: []
 });
 
 @Component({
@@ -77,18 +77,6 @@ export class SurgeriesComponent implements OnInit {
   showDeleteModal = signal(false);
   deletingId = signal<string | null>(null);
   form = signal<SurgeryForm>(emptyForm());
-  
-  // For form modal
-  selectedAssistantIds = signal<Set<string>>(new Set());
-  uploadedDocuments = signal<File[]>([]);
-
-  // Dropdown lists
-  patients = signal<DropdownOption[]>([]);
-  surgeons = signal<DropdownOption[]>([]);
-  anesthesiologists = signal<DropdownOption[]>([]);
-  assistants = signal<DropdownOption[]>([]);
-  surgeryTypes = signal<DropdownOption[]>([]);
-  loadingDropdowns = signal(false);
 
   userRole = '';
 
@@ -174,51 +162,13 @@ export class SurgeriesComponent implements OnInit {
 
   constructor(
     private surgeriesService: SurgeriesService,
-    private authService: AuthService,
-    private documentsService: DocumentsService
+    private authService: AuthService
   ) {
     this.userRole = this.authService.getRole();
   }
 
   ngOnInit(): void {
-    this.loadDropdowns();
     this.loadSurgeries();
-  }
-
-  private loadDropdowns(): void {
-    this.loadingDropdowns.set(true);
-    
-    // Load all dropdowns in parallel
-    this.surgeriesService.getPatients().subscribe({
-      next: (data) => this.patients.set(data),
-      error: (err) => console.error('Error loading patients:', err)
-    });
-    
-    this.surgeriesService.getSurgeons().subscribe({
-      next: (data) => this.surgeons.set(data),
-      error: (err) => console.error('Error loading surgeons:', err)
-    });
-    
-    this.surgeriesService.getAnesthesiologists().subscribe({
-      next: (data) => this.anesthesiologists.set(data),
-      error: (err) => console.error('Error loading anesthesiologists:', err)
-    });
-    
-    this.surgeriesService.getAssistants().subscribe({
-      next: (data) => this.assistants.set(data),
-      error: (err) => console.error('Error loading assistants:', err)
-    });
-    
-    this.surgeriesService.getSurgeryTypes().subscribe({
-      next: (data) => {
-        this.surgeryTypes.set(data);
-        this.loadingDropdowns.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading surgery types:', err);
-        this.loadingDropdowns.set(false);
-      }
-    });
   }
 
   loadSurgeries(): void {
@@ -306,35 +256,6 @@ export class SurgeriesComponent implements OnInit {
   closeForm(): void {
     this.showFormModal.set(false);
     this.form.set(emptyForm());
-    this.selectedAssistantIds.set(new Set());
-    this.uploadedDocuments.set([]);
-  }
-
-  toggleAssistant(assistantId: string): void {
-    const current = new Set(this.selectedAssistantIds());
-    if (current.has(assistantId)) {
-      current.delete(assistantId);
-    } else {
-      current.add(assistantId);
-    }
-    this.selectedAssistantIds.set(current);
-  }
-
-  onDocumentSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files) {
-      const files = Array.from(input.files).filter(f => f.type === 'application/pdf');
-      if (files.length !== input.files.length) {
-        this.error.set('Solo se permiten archivos PDF');
-      }
-      this.uploadedDocuments.set([...this.uploadedDocuments(), ...files]);
-    }
-  }
-
-  removeDocument(index: number): void {
-    const current = [...this.uploadedDocuments()];
-    current.splice(index, 1);
-    this.uploadedDocuments.set(current);
   }
 
   saveForm(): void {
@@ -346,42 +267,12 @@ export class SurgeriesComponent implements OnInit {
       : this.surgeriesService.create(payload);
 
     this.error.set('');
-    this.loading.set(true);
-    
     request.subscribe({
-      next: (surgery) => {
-        // Handle assistants assignment
-        const assistantIds = Array.from(this.selectedAssistantIds());
-        if (assistantIds.length > 0 && !f.id) {
-          // Only assign on create, not on update
-          this.surgeriesService.assignAssistants(surgery.id, assistantIds).subscribe({
-            error: () => console.warn('Could not assign assistants')
-          });
-        }
-
-        // Handle document uploads
-        const documents = this.uploadedDocuments();
-        if (documents.length > 0) {
-          documents.forEach(file => {
-            this.documentsService.upload({
-              file,
-              documentType: 'OTRO',
-              surgeryId: surgery.id,
-              notes: 'Documento de cirugía'
-            }).subscribe({
-              error: () => console.warn('Could not upload document:', file.name)
-            });
-          });
-        }
-
-        this.loading.set(false);
+      next: () => {
         this.closeForm();
         this.loadSurgeries();
       },
-      error: () => {
-        this.loading.set(false);
-        this.error.set('No se pudo guardar la cirugia. Revise permisos e IDs.');
-      }
+      error: () => this.error.set('No se pudo guardar la cirugia. Revise permisos e IDs.')
     });
   }
 
