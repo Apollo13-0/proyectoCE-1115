@@ -1,6 +1,7 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SurgeriesService, ApiSurgery } from '../../core/surgeries.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 interface Surgery {
   id: string;
@@ -66,7 +67,7 @@ export class CalendarComponent implements OnInit {
         console.log('Mapped surgeries:', this.surgeries);
         this.isLoading.set(false);
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('Error loading surgeries:', error);
         this.surgeries = [];
         this.isLoading.set(false);

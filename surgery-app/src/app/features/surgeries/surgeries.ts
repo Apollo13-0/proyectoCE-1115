@@ -17,12 +17,9 @@ interface SurgeryView {
   endTime: string;
   duration: number;
   status: ApiSurgeryStatus;
-  notes: string;
-  postopNotes: string;
   operatingRoom: string;
   preopNotes: string;
   postopNotes: string;
-  status: ApiSurgeryStatus;
   assistantIds?: string[];
   documents?: File[];
 }
@@ -352,7 +349,7 @@ export class SurgeriesComponent implements OnInit {
       endTime: this.toTime(end),
       duration: Number.isFinite(durationMs) ? Math.max(Math.round(durationMs / 60000), 0) : 0,
       status: api.status,
-      notes: api.preop_notes ?? '',
+      preopNotes: api.preop_notes ?? '',
       postopNotes: api.postop_notes ?? '',
       operatingRoom: api.operating_room ?? '-',
     };
