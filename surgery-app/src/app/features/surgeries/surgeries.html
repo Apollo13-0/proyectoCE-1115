@@ -198,16 +198,31 @@
       <div class="modal-body">
         <div class="form-grid">
           <div class="form-group">
-            <label class="form-label">Paciente ID <span class="req">*</span></label>
-            <input class="form-control" type="text" [value]="form().patientId" (input)="updateForm('patientId', $any($event.target).value)" />
+            <label class="form-label">Paciente <span class="req">*</span></label>
+            <select class="form-control" [value]="form().patientId" (change)="updateForm('patientId', $any($event.target).value)">
+              <option value="">Seleccione un paciente</option>
+              @for (patient of patients(); track patient.id) {
+                <option [value]="patient.id">{{ patientLabel(patient) }}</option>
+              }
+            </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Cirujano ID <span class="req">*</span></label>
-            <input class="form-control" type="text" [value]="form().leadSurgeonId" (input)="updateForm('leadSurgeonId', $any($event.target).value)" />
+            <label class="form-label">Cirujano <span class="req">*</span></label>
+            <select class="form-control" [value]="form().leadSurgeonId" (change)="updateForm('leadSurgeonId', $any($event.target).value)">
+              <option value="">Seleccione un cirujano</option>
+              @for (surgeon of surgeons(); track surgeon.id) {
+                <option [value]="surgeon.id">{{ surgeonLabel(surgeon) }}</option>
+              }
+            </select>
           </div>
           <div class="form-group">
-            <label class="form-label">Anestesiologo ID <span class="req">*</span></label>
-            <input class="form-control" type="text" [value]="form().anesthesiologistId" (input)="updateForm('anesthesiologistId', $any($event.target).value)" />
+            <label class="form-label">Anestesiologo <span class="req">*</span></label>
+            <select class="form-control" [value]="form().anesthesiologistId" (change)="updateForm('anesthesiologistId', $any($event.target).value)">
+              <option value="">Seleccione un anestesiologo</option>
+              @for (anesthesiologist of anesthesiologists(); track anesthesiologist.id) {
+                <option [value]="anesthesiologist.id">{{ anesthesiologistLabel(anesthesiologist) }}</option>
+              }
+            </select>
           </div>
           <div class="form-group">
             <label class="form-label">Tipo de cirugia <span class="req">*</span></label>

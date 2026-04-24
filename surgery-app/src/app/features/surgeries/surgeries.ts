@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/auth.service';
 import { ApiSurgery, ApiSurgeryStatus, SurgeryPayload, SurgeriesService } from '../../core/surgeries.service';
+import { ApiPatient, PatientsService } from '../../core/patients.service';
+import { ApiAppUser, UsersService } from '../../core/users.service';
 
 interface SurgeryView {
   id: string;
@@ -74,6 +76,9 @@ export class SurgeriesComponent implements OnInit {
   showDeleteModal = signal(false);
   deletingId = signal<string | null>(null);
   form = signal<SurgeryForm>(emptyForm());
+  patients = signal<ApiPatient[]>([]);
+  surgeons = signal<ApiAppUser[]>([]);
+  anesthesiologists = signal<ApiAppUser[]>([]);
 
   userRole = '';
 
@@ -159,13 +164,16 @@ export class SurgeriesComponent implements OnInit {
 
   constructor(
     private surgeriesService: SurgeriesService,
-    private authService: AuthService
+    private authService: AuthService,
+    private patientsService: PatientsService,
+    private usersService: UsersService
   ) {
     this.userRole = this.authService.getRole();
   }
 
   ngOnInit(): void {
     this.loadSurgeries();
+    this.loadFormOptions();
   }
 
   loadSurgeries(): void {
@@ -313,6 +321,16 @@ export class SurgeriesComponent implements OnInit {
     this.dateTo.set('');
   }
 
+  patientLabel(patient: ApiPatient): string {
+    const document = patient.identity_document ? ` - ${patient.identity_document}` : '';
+    return `${patient.first_name} ${patient.last_name}${document}`;
+  }
+
+  surgeonLabel(user: ApiAppUser): string {
+    const name = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+    return name || user.email;
+  }
+
   get canChangeStatus(): boolean {
     return ['admin', 'surgeon'].includes(this.userRole);
   }
@@ -329,6 +347,26 @@ export class SurgeriesComponent implements OnInit {
     return this.userRole === 'admin'
       ? 'Todas las cirugias registradas'
       : 'Solo cirugias asociadas a su usuario';
+  }
+
+  private loadFormOptions(): void {
+    this.patientsService.list().subscribe({
+      next: response => this.patients.set(response.items),
+      error: () => this.error.set('No se pudo cargar la lista de pacientes.'),
+    });
+
+    this.usersService.list().subscribe({
+      next: response => {
+        this.surgeons.set(response.items.filter(user => user.role === 'CIRUJANO'));
+        this.anesthesiologists.set(response.items.filter(user => user.role === 'ANESTESIOLOGO'));
+      },
+      error: () => this.error.set('No se pudo cargar la lista de cirujanos.'),
+    });
+  }
+
+  anesthesiologistLabel(user: ApiAppUser): string {
+    const name = `${user.first_name ?? ''} ${user.last_name ?? ''}`.trim();
+    return name || user.email;
   }
 
   private mapSurgery(api: ApiSurgery): SurgeryView {

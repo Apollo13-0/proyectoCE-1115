@@ -45,7 +45,7 @@ export class CalendarComponent implements OnInit {
     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'
   ];
 
-  surgeries: Surgery[] = [];
+  surgeries = signal<Surgery[]>([]);
 
   constructor(private surgeriesService: SurgeriesService) {}
 
@@ -63,13 +63,13 @@ export class CalendarComponent implements OnInit {
     this.surgeriesService.getCalendarData(month, year).subscribe({
       next: (apiSurgeries: ApiSurgery[]) => {
         console.log(`Loaded ${apiSurgeries.length} surgeries`, apiSurgeries);
-        this.surgeries = apiSurgeries.map(s => this.mapApiSurgery(s));
-        console.log('Mapped surgeries:', this.surgeries);
+        this.surgeries.set(apiSurgeries.map(s => this.mapApiSurgery(s)));
+        console.log('Mapped surgeries:', this.surgeries());
         this.isLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error loading surgeries:', error);
-        this.surgeries = [];
+        this.surgeries.set([]);
         this.isLoading.set(false);
       }
     });
@@ -123,7 +123,7 @@ export class CalendarComponent implements OnInit {
     const cellMonth = date.getMonth();
     const cellDate = date.getDate();
     
-    const surgeries = this.surgeries.filter(s => {
+    const surgeries = this.surgeries().filter(s => {
       // Get year, month, day of the surgery's scheduled start
       const surgeryDate = new Date(s.date);
       const surgeryYear = surgeryDate.getFullYear();
@@ -166,7 +166,7 @@ export class CalendarComponent implements OnInit {
     const d     = this.currentDate();
     const month = d.getMonth();
     const year  = d.getFullYear();
-    const ms    = this.surgeries.filter(s => {
+    const ms    = this.surgeries().filter(s => {
       const sd = new Date(s.date);
       return sd.getMonth() === month && sd.getFullYear() === year;
     });
