@@ -54,12 +54,53 @@ export interface SurgeryPayload {
 export class SurgeriesService {
   constructor(private http: HttpClient) {}
 
-  list(page = 1, size = 100): Observable<PaginatedSurgeries> {
-    const params = new HttpParams()
+  list(
+    page = 1,
+    size = 100,
+    filters?: {
+      date_from?: string;
+      date_to?: string;
+      status?: ApiSurgeryStatus;
+      surgery_type?: string;
+      patient_id?: string;
+      surgeon_id?: string;
+      anesthesiologist_id?: string;
+    }
+  ): Observable<PaginatedSurgeries> {
+    let params = new HttpParams()
       .set('page', page)
       .set('size', size);
 
+    if (filters) {
+      for (const [key, value] of Object.entries(filters)) {
+        if (value) {
+          params = params.set(key, value);
+        }
+      }
+    }
+
     return this.http.get<PaginatedSurgeries>('/api/surgeries/', { params });
+  }
+
+  getCalendarData(month: number, year: number): Observable<ApiSurgery[]> {
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59, 999);
+    const pad = (value: number) => value.toString().padStart(2, '0');
+    const format = (date: Date) =>
+      `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+    return new Observable<ApiSurgery[]>(subscriber => {
+      this.list(1, 100, {
+        date_from: format(start),
+        date_to: format(end),
+      }).subscribe({
+        next: response => {
+          subscriber.next(response.items);
+          subscriber.complete();
+        },
+        error: error => subscriber.error(error),
+      });
+    });
   }
 
   getById(id: string): Observable<ApiSurgery> {
