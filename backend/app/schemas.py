@@ -1,8 +1,10 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import Optional, List
 from datetime import datetime, date, time
 from .models import UserRole, RequestStatus, SurgeryStatus, DocumentType
 from uuid import UUID
+
+MEDICAL_ROLES = {UserRole.CIRUJANO, UserRole.ANESTESIOLOGO}
 
 # User schemas
 class UserBase(BaseModel):
@@ -12,6 +14,12 @@ class UserBase(BaseModel):
     phone: Optional[str] = None
     role: UserRole
     license_number: Optional[str] = None
+
+    @model_validator(mode="after")
+    def license_required_for_medical_roles(self) -> "UserBase":
+        if self.role in MEDICAL_ROLES and not self.license_number:
+            raise ValueError("license_number is required for CIRUJANO and ANESTESIOLOGO roles")
+        return self
 
 class UserCreate(UserBase):
     password: str

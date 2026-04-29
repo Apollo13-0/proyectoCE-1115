@@ -12,6 +12,7 @@ export interface AppUser {
   lastName: string;
   email: string;
   role: UserRole;
+  licenseNumber?: string | null;
   status: 'active' | 'inactive';
   createdAt: Date;
   lastLogin?: Date;
@@ -19,7 +20,7 @@ export interface AppUser {
 
 const emptyUser = (): AppUser => ({
   firstName: '', lastName: '', email: '',
-  role: 'patient', status: 'active', createdAt: new Date()
+  role: 'patient', licenseNumber: null, status: 'active', createdAt: new Date()
 });
 
 @Component({
@@ -200,11 +201,17 @@ export class UsersComponent implements OnInit {
     this.form.update(f => ({ ...f, [field]: value }));
   }
 
+  needsLicense(): boolean {
+    const r = this.form().role;
+    return r === 'surgeon' || r === 'anesthesiologist';
+  }
+
   isFormValid(): boolean {
     const f = this.form();
     const isNew = this.editingId() === null;
+    const licenseOk = !this.needsLicense() || !!(f.licenseNumber && f.licenseNumber.trim());
     return !!(f.firstName && f.lastName && f.email && f.role &&
-      (!isNew || this.newPassword().length >= 8));
+      (!isNew || this.newPassword().length >= 8) && licenseOk);
   }
 
   get isAdmin(): boolean {
@@ -218,6 +225,7 @@ export class UsersComponent implements OnInit {
       lastName: api.last_name ?? '',
       email: api.email,
       role: this.fromApiRole(api.role),
+      licenseNumber: api.license_number ?? null,
       status: api.is_active ? 'active' : 'inactive',
       createdAt: new Date(api.created_at)
     };
@@ -229,6 +237,7 @@ export class UsersComponent implements OnInit {
       last_name: user.lastName,
       email: user.email,
       role: this.toApiRole(user.role),
+      license_number: user.licenseNumber ?? null,
       is_active: user.status === 'active'
     };
   }
